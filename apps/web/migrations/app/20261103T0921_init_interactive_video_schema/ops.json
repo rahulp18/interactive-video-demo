@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.Interaction",
+    "label": "Create table \"Interaction\"",
+    "summary": "Creates table \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Interaction\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Interaction\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Interaction\"",
+        "sql": "CREATE TABLE \"public\".\"Interaction\" (\n  \"createdAt\" timestamptz(3) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isSkippable\" bool DEFAULT false NOT NULL,\n  \"position\" int4 DEFAULT 0 NOT NULL,\n  \"question\" text NOT NULL,\n  \"timestamp\" float8 NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  \"videoId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Interaction_type_check_ea447555\" CHECK (\"type\" IN ('SURVEY', 'QUIZ')),\n  CONSTRAINT \"interaction_position_nonneg_f43e8efc\" CHECK (\"position\" >= 0),\n  CONSTRAINT \"interaction_timestamp_nonneg_efd28394\" CHECK (\"timestamp\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Interaction\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Interaction\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Interaction\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.InteractionOption",
+    "label": "Create table \"InteractionOption\"",
+    "summary": "Creates table \"InteractionOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "InteractionOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"InteractionOption\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionOption\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"InteractionOption\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"InteractionOption\"",
+        "sql": "CREATE TABLE \"public\".\"InteractionOption\" (\n  \"id\" SERIAL NOT NULL,\n  \"interactionId\" int4 NOT NULL,\n  \"isCorrect\" bool DEFAULT false NOT NULL,\n  \"position\" int4 DEFAULT 0 NOT NULL,\n  \"text\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"interaction_option_position_nonneg_f43e8efc\" CHECK (\"position\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"InteractionOption\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionOption\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"InteractionOption\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.InteractionResponse",
+    "label": "Create table \"InteractionResponse\"",
+    "summary": "Creates table \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"InteractionResponse\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"InteractionResponse\"",
+        "sql": "CREATE TABLE \"public\".\"InteractionResponse\" (\n  \"createdAt\" timestamptz(3) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"interactionId\" int4 NOT NULL,\n  \"isSkipped\" bool DEFAULT false NOT NULL,\n  \"selectedOptionId\" int4,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"response_skipped_matches_option_164369b0\" CHECK (\"isSkipped\" = (\"selectedOptionId\" IS NULL))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"InteractionResponse\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"InteractionResponse\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.User",
+    "label": "Create table \"User\"",
+    "summary": "Creates table \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"User\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"User\"",
+        "sql": "CREATE TABLE \"public\".\"User\" (\n  \"createdAt\" timestamptz(3) NOT NULL,\n  \"email\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"password\" text NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"User\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"User\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"User\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.Video",
+    "label": "Create table \"Video\"",
+    "summary": "Creates table \"Video\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Video\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Video\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Video\"",
+        "sql": "CREATE TABLE \"public\".\"Video\" (\n  \"createdAt\" timestamptz(3) NOT NULL,\n  \"duration\" float8 NOT NULL,\n  \"fileUrl\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"mimeType\" text NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"video_duration_nonneg_74ef1b5d\" CHECK (\"duration\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Video\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Video\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Video\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "unique.InteractionOption.InteractionOption_id_interactionId_key",
+    "label": "Add unique constraint on \"InteractionOption\" (id, interactionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "InteractionOption_id_interactionId_key",
+        "table": "InteractionOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"InteractionOption_id_interactionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionOption_id_interactionId_key",
+          "public",
+          "\"public\".\"InteractionOption\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"InteractionOption_id_interactionId_key\" on \"InteractionOption\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"InteractionOption_id_interactionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionOption\" ADD CONSTRAINT \"InteractionOption_id_interactionId_key\" UNIQUE (\"id\", \"interactionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"InteractionOption_id_interactionId_key\" exists on (id, interactionId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "InteractionOption_id_interactionId_key",
+          "public",
+          "\"public\".\"InteractionOption\"",
+          "u",
+          "[\"id\",\"interactionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.InteractionOption.InteractionOption_interactionId_position_key",
+    "label": "Add unique constraint on \"InteractionOption\" (interactionId, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "InteractionOption_interactionId_position_key",
+        "table": "InteractionOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"InteractionOption_interactionId_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionOption_interactionId_position_key",
+          "public",
+          "\"public\".\"InteractionOption\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"InteractionOption_interactionId_position_key\" on \"InteractionOption\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"InteractionOption_interactionId_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionOption\" ADD CONSTRAINT \"InteractionOption_interactionId_position_key\" UNIQUE (\"interactionId\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"InteractionOption_interactionId_position_key\" exists on (interactionId, position)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "InteractionOption_interactionId_position_key",
+          "public",
+          "\"public\".\"InteractionOption\"",
+          "u",
+          "[\"interactionId\",\"position\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.InteractionResponse.InteractionResponse_userId_interactionId_key",
+    "label": "Add unique constraint on \"InteractionResponse\" (userId, interactionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "InteractionResponse_userId_interactionId_key",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"InteractionResponse_userId_interactionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionResponse_userId_interactionId_key",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"InteractionResponse_userId_interactionId_key\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"InteractionResponse_userId_interactionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD CONSTRAINT \"InteractionResponse_userId_interactionId_key\" UNIQUE (\"userId\", \"interactionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"InteractionResponse_userId_interactionId_key\" exists on (userId, interactionId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "InteractionResponse_userId_interactionId_key",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "u",
+          "[\"userId\",\"interactionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.User.User_email_key",
+    "label": "Add unique constraint on \"User\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "User_email_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_email_key",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"User_email_key\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"User_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"User_email_key\" exists on (email)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "User_email_key",
+          "public",
+          "\"public\".\"User\"",
+          "u",
+          "[\"email\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Interaction.Interaction_videoId_idx_5feac8db",
+    "label": "Create index \"Interaction_videoId_idx_5feac8db\" on \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Interaction_videoId_idx_5feac8db",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Interaction_videoId_idx_5feac8db\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Interaction_videoId_idx_5feac8db\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"Interaction_videoId_idx_5feac8db\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Interaction_videoId_idx_5feac8db\"",
+        "sql": "CREATE INDEX \"Interaction_videoId_idx_5feac8db\" ON \"public\".\"Interaction\" (\"videoId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Interaction_videoId_idx_5feac8db\" exists on \"Interaction\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"Interaction_videoId_idx_5feac8db\"",
+          "i",
+          "I",
+          "\"public\".\"Interaction\"",
+          "btree",
+          "[\"videoId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Interaction.Interaction_videoId_timestamp_position_idx_f4250cd7",
+    "label": "Create index \"Interaction_videoId_timestamp_position_idx_f4250cd7\" on \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Interaction_videoId_timestamp_position_idx_f4250cd7",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Interaction_videoId_timestamp_position_idx_f4250cd7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Interaction_videoId_timestamp_position_idx_f4250cd7\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"Interaction_videoId_timestamp_position_idx_f4250cd7\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Interaction_videoId_timestamp_position_idx_f4250cd7\"",
+        "sql": "CREATE INDEX \"Interaction_videoId_timestamp_position_idx_f4250cd7\" ON \"public\".\"Interaction\" (\"videoId\", \"timestamp\", \"position\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Interaction_videoId_timestamp_position_idx_f4250cd7\" exists on \"Interaction\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"Interaction_videoId_timestamp_position_idx_f4250cd7\"",
+          "i",
+          "I",
+          "\"public\".\"Interaction\"",
+          "btree",
+          "[\"videoId\",\"timestamp\",\"position\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.InteractionOption.InteractionOption_interactionId_idx_91379984",
+    "label": "Create index \"InteractionOption_interactionId_idx_91379984\" on \"InteractionOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "InteractionOption_interactionId_idx_91379984",
+        "table": "InteractionOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"InteractionOption_interactionId_idx_91379984\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionOption_interactionId_idx_91379984\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"InteractionOption_interactionId_idx_91379984\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"InteractionOption_interactionId_idx_91379984\"",
+        "sql": "CREATE INDEX \"InteractionOption_interactionId_idx_91379984\" ON \"public\".\"InteractionOption\" (\"interactionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"InteractionOption_interactionId_idx_91379984\" exists on \"InteractionOption\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionOption_interactionId_idx_91379984\"",
+          "i",
+          "I",
+          "\"public\".\"InteractionOption\"",
+          "btree",
+          "[\"interactionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.InteractionResponse.InteractionResponse_interactionId_idx_91379984",
+    "label": "Create index \"InteractionResponse_interactionId_idx_91379984\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "InteractionResponse_interactionId_idx_91379984",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"InteractionResponse_interactionId_idx_91379984\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_interactionId_idx_91379984\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"InteractionResponse_interactionId_idx_91379984\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"InteractionResponse_interactionId_idx_91379984\"",
+        "sql": "CREATE INDEX \"InteractionResponse_interactionId_idx_91379984\" ON \"public\".\"InteractionResponse\" (\"interactionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"InteractionResponse_interactionId_idx_91379984\" exists on \"InteractionResponse\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_interactionId_idx_91379984\"",
+          "i",
+          "I",
+          "\"public\".\"InteractionResponse\"",
+          "btree",
+          "[\"interactionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.InteractionResponse.InteractionResponse_selectedOptionId_idx_945b4851",
+    "label": "Create index \"InteractionResponse_selectedOptionId_idx_945b4851\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "InteractionResponse_selectedOptionId_idx_945b4851",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"InteractionResponse_selectedOptionId_idx_945b4851\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_selectedOptionId_idx_945b4851\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"InteractionResponse_selectedOptionId_idx_945b4851\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"InteractionResponse_selectedOptionId_idx_945b4851\"",
+        "sql": "CREATE INDEX \"InteractionResponse_selectedOptionId_idx_945b4851\" ON \"public\".\"InteractionResponse\" (\"selectedOptionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"InteractionResponse_selectedOptionId_idx_945b4851\" exists on \"InteractionResponse\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_selectedOptionId_idx_945b4851\"",
+          "i",
+          "I",
+          "\"public\".\"InteractionResponse\"",
+          "btree",
+          "[\"selectedOptionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.InteractionResponse.InteractionResponse_selectedOptionId_interactionId_idx_dc11b085",
+    "label": "Create index \"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "InteractionResponse_selectedOptionId_interactionId_idx_dc11b085",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\"",
+        "sql": "CREATE INDEX \"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\" ON \"public\".\"InteractionResponse\" (\"selectedOptionId\", \"interactionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\" exists on \"InteractionResponse\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_selectedOptionId_interactionId_idx_dc11b085\"",
+          "i",
+          "I",
+          "\"public\".\"InteractionResponse\"",
+          "btree",
+          "[\"selectedOptionId\",\"interactionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.InteractionResponse.InteractionResponse_userId_idx_a489d58a",
+    "label": "Create index \"InteractionResponse_userId_idx_a489d58a\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "InteractionResponse_userId_idx_a489d58a",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"InteractionResponse_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_userId_idx_a489d58a\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"InteractionResponse_userId_idx_a489d58a\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"InteractionResponse_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"InteractionResponse_userId_idx_a489d58a\" ON \"public\".\"InteractionResponse\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"InteractionResponse_userId_idx_a489d58a\" exists on \"InteractionResponse\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"InteractionResponse_userId_idx_a489d58a\"",
+          "i",
+          "I",
+          "\"public\".\"InteractionResponse\"",
+          "btree",
+          "[\"userId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Interaction.Interaction_videoId_fkey",
+    "label": "Add foreign key \"Interaction_videoId_fkey\" on \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Interaction_videoId_fkey",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Interaction_videoId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Interaction_videoId_fkey",
+          "public",
+          "\"public\".\"Interaction\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"Interaction_videoId_fkey\" on \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Interaction_videoId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Interaction\"\nADD CONSTRAINT \"Interaction_videoId_fkey\"\nFOREIGN KEY (\"videoId\")\nREFERENCES \"public\".\"Video\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Interaction_videoId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "Interaction_videoId_fkey",
+          "public",
+          "\"public\".\"Interaction\"",
+          "f",
+          "[\"videoId\"]",
+          "\"public\".\"Video\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.InteractionOption.InteractionOption_interactionId_fkey",
+    "label": "Add foreign key \"InteractionOption_interactionId_fkey\" on \"InteractionOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "InteractionOption_interactionId_fkey",
+        "table": "InteractionOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"InteractionOption_interactionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionOption_interactionId_fkey",
+          "public",
+          "\"public\".\"InteractionOption\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"InteractionOption_interactionId_fkey\" on \"InteractionOption\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"InteractionOption_interactionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionOption\"\nADD CONSTRAINT \"InteractionOption_interactionId_fkey\"\nFOREIGN KEY (\"interactionId\")\nREFERENCES \"public\".\"Interaction\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"InteractionOption_interactionId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "InteractionOption_interactionId_fkey",
+          "public",
+          "\"public\".\"InteractionOption\"",
+          "f",
+          "[\"interactionId\"]",
+          "\"public\".\"Interaction\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.InteractionResponse.InteractionResponse_userId_fkey",
+    "label": "Add foreign key \"InteractionResponse_userId_fkey\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "InteractionResponse_userId_fkey",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"InteractionResponse_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionResponse_userId_fkey",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"InteractionResponse_userId_fkey\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"InteractionResponse_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\"\nADD CONSTRAINT \"InteractionResponse_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"InteractionResponse_userId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "InteractionResponse_userId_fkey",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "f",
+          "[\"userId\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.InteractionResponse.InteractionResponse_interactionId_fkey",
+    "label": "Add foreign key \"InteractionResponse_interactionId_fkey\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "InteractionResponse_interactionId_fkey",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"InteractionResponse_interactionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionResponse_interactionId_fkey",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"InteractionResponse_interactionId_fkey\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"InteractionResponse_interactionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\"\nADD CONSTRAINT \"InteractionResponse_interactionId_fkey\"\nFOREIGN KEY (\"interactionId\")\nREFERENCES \"public\".\"Interaction\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"InteractionResponse_interactionId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "InteractionResponse_interactionId_fkey",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "f",
+          "[\"interactionId\"]",
+          "\"public\".\"Interaction\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.InteractionResponse.InteractionResponse_selectedOptionId_interactionId_fkey",
+    "label": "Add foreign key \"InteractionResponse_selectedOptionId_interactionId_fkey\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "InteractionResponse_selectedOptionId_interactionId_fkey",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"InteractionResponse_selectedOptionId_interactionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "InteractionResponse_selectedOptionId_interactionId_fkey",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"InteractionResponse_selectedOptionId_interactionId_fkey\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"InteractionResponse_selectedOptionId_interactionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\"\nADD CONSTRAINT \"InteractionResponse_selectedOptionId_interactionId_fkey\"\nFOREIGN KEY (\"selectedOptionId\", \"interactionId\")\nREFERENCES \"public\".\"InteractionOption\" (\"id\", \"interactionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"InteractionResponse_selectedOptionId_interactionId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "InteractionResponse_selectedOptionId_interactionId_fkey",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "f",
+          "[\"selectedOptionId\",\"interactionId\"]",
+          "\"public\".\"InteractionOption\"",
+          "[\"id\",\"interactionId\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  }
+]

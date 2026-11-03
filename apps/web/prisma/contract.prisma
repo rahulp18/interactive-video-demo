@@ -1,0 +1,114 @@
+// use prisma-8
+
+enum InteractionType {
+  @@type("pg/text@1")
+  SURVEY = "SURVEY"
+  QUIZ   = "QUIZ"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  // Stores a password hash only, never plaintext. Hashing is the application's job.
+  password  String
+  responses InteractionResponse[]
+  sessions  Session[]
+  videos    Video[]
+  createdAt temporal.CreatedAt
+  updatedAt temporal.UpdatedAt
+}
+
+// One row per issued web cookie or mobile bearer token. Only the SHA-256 of the token is stored.
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt temporal.CreatedAt
+  updatedAt temporal.UpdatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Video {
+  id           Int      @id @default(autoincrement())
+  title        String
+  fileUrl      String
+  // Seconds. Reported by the uploading browser (UploadThing does not probe media), so treat as a hint.
+  duration     Float
+  mimeType     String
+  // Filename as uploaded by the user
+  originalName String
+  sizeBytes    Int
+  // UploadThing file key; unique so a repeated completion callback cannot create a second row
+  fileKey      String   @unique
+  uploaderId   Int
+  uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: NoAction)
+  interactions Interaction[]
+  createdAt    temporal.CreatedAt
+  updatedAt    temporal.UpdatedAt
+
+  @@index([uploaderId])
+  @@check(expression: sql`"duration" >= 0`, name: "video_duration_nonneg")
+  @@check(expression: sql`"sizeBytes" >= 0`, name: "video_size_nonneg")
+}
+
+model Interaction {
+  id          Int             @id @default(autoincrement())
+  videoId     Int
+  video       Video           @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  // Seconds into the video
+  timestamp   Float
+  type        InteractionType
+  question    String
+  isSkippable Boolean         @default(false)
+  // Display order among interactions at the same timestamp
+  position    Int             @default(0)
+  options     InteractionOption[]
+  responses   InteractionResponse[]
+  createdAt   temporal.CreatedAt
+  updatedAt   temporal.UpdatedAt
+
+  @@index([videoId, timestamp, position])
+  @@check(expression: sql`"timestamp" >= 0`, name: "interaction_timestamp_nonneg")
+  @@check(expression: sql`"position" >= 0`, name: "interaction_position_nonneg")
+}
+
+model InteractionOption {
+  id            Int         @id @default(autoincrement())
+  interactionId Int
+  interaction   Interaction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+  text          String
+  // Meaningful for QUIZ interactions only; always false for SURVEY
+  isCorrect     Boolean     @default(false)
+  position      Int         @default(0)
+  responses     InteractionResponse[]
+
+  // Target of the composite foreign key on InteractionResponse
+  @@unique([id, interactionId])
+  @@unique([interactionId, position])
+  @@check(expression: sql`"position" >= 0`, name: "interaction_option_position_nonneg")
+}
+
+model InteractionResponse {
+  id               Int         @id @default(autoincrement())
+  userId           Int
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interactionId    Int
+  interaction      Interaction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+  // Null when the response was skipped
+  selectedOptionId Int?
+  // Guarantees the selected option belongs to this same interaction
+  selectedOption   InteractionOption? @relation(fields: [selectedOptionId, interactionId], references: [id, interactionId], onDelete: NoAction)
+  isSkipped        Boolean     @default(false)
+  createdAt        temporal.CreatedAt
+  updatedAt        temporal.UpdatedAt
+
+  @@unique([userId, interactionId])
+  @@index([interactionId])
+  @@index([selectedOptionId])
+  @@check(expression: sql`"isSkipped" = ("selectedOptionId" IS NULL)`, name: "response_skipped_matches_option")
+}

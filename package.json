@@ -1,0 +1,28 @@
+{
+  "name": "interactive-video-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "scripts": {
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "dev:web": "pnpm --filter web dev",
+    "dev:mobile": "pnpm --filter mobile dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.10.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "prisma": "8.0.0-rc.29",
+    "turbo": "^2.11.10",
+    "typescript": "~6.0.3"
+  }
+}

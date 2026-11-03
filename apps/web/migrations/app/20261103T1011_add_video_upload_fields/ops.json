@@ -1,0 +1,529 @@
+[
+  {
+    "id": "column.Video.fileKey",
+    "label": "Add column fileKey to Video",
+    "summary": "Adds column fileKey to table Video",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "fileKey",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"fileKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "fileKey"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"fileKey\" on \"Video\""
+        }
+      },
+      {
+        "description": "ensure table \"Video\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"Video\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "Video",
+            "column": "fileKey",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"fileKey\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD COLUMN \"fileKey\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"fileKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "fileKey"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"fileKey\" on \"Video\""
+        }
+      },
+      {
+        "description": "verify column \"fileKey\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "fileKey",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"fileKey\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "fileKey",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.Video.originalName",
+    "label": "Add column originalName to Video",
+    "summary": "Adds column originalName to table Video",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Video"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"originalName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "originalName"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"originalName\" on \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"originalName\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD COLUMN \"originalName\" text DEFAULT ('') NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"originalName\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ALTER COLUMN \"originalName\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"originalName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "originalName"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"originalName\" on \"Video\""
+        }
+      },
+      {
+        "description": "verify column \"originalName\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "originalName",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"originalName\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "originalName"
+        ]
+      },
+      {
+        "description": "verify column \"originalName\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "originalName",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.Video.sizeBytes",
+    "label": "Add column sizeBytes to Video",
+    "summary": "Adds column sizeBytes to table Video",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Video"
+      }
+    },
+    "operationClass": "additive",
+    "precheck": [
+      {
+        "description": "ensure column \"sizeBytes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "sizeBytes"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"sizeBytes\" on \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sizeBytes\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD COLUMN \"sizeBytes\" int4 DEFAULT (0) NOT NULL"
+      },
+      {
+        "description": "drop temporary default from column \"sizeBytes\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ALTER COLUMN \"sizeBytes\" DROP DEFAULT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sizeBytes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "sizeBytes"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"sizeBytes\" on \"Video\""
+        }
+      },
+      {
+        "description": "verify column \"sizeBytes\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "sizeBytes",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"sizeBytes\" has no default after temporary default removal",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "sizeBytes"
+        ]
+      },
+      {
+        "description": "verify column \"sizeBytes\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "sizeBytes",
+          "integer"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.Video.uploaderId",
+    "label": "Add column uploaderId to Video",
+    "summary": "Adds column uploaderId to table Video",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "uploaderId",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"uploaderId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "uploaderId"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"uploaderId\" on \"Video\""
+        }
+      },
+      {
+        "description": "ensure table \"Video\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"Video\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "Video",
+            "column": "uploaderId",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"uploaderId\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD COLUMN \"uploaderId\" int4 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"uploaderId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "uploaderId"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"uploaderId\" on \"Video\""
+        }
+      },
+      {
+        "description": "verify column \"uploaderId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "uploaderId",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"uploaderId\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "uploaderId",
+          "integer"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Video.video_size_nonneg_cff0c8d9",
+    "label": "Add check constraint \"video_size_nonneg_cff0c8d9\" on \"Video\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "video_size_nonneg_cff0c8d9",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"video_size_nonneg_cff0c8d9\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "video_size_nonneg_cff0c8d9",
+          "public",
+          "\"public\".\"Video\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"video_size_nonneg_cff0c8d9\" on \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"video_size_nonneg_cff0c8d9\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD CONSTRAINT \"video_size_nonneg_cff0c8d9\" CHECK (\"sizeBytes\" >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"video_size_nonneg_cff0c8d9\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "video_size_nonneg_cff0c8d9",
+          "public",
+          "\"public\".\"Video\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Video.Video_fileKey_key",
+    "label": "Add unique constraint on \"Video\" (fileKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Video_fileKey_key",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Video_fileKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Video_fileKey_key",
+          "public",
+          "\"public\".\"Video\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Video_fileKey_key\" on \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Video_fileKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD CONSTRAINT \"Video_fileKey_key\" UNIQUE (\"fileKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"Video_fileKey_key\" exists on (fileKey)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "Video_fileKey_key",
+          "public",
+          "\"public\".\"Video\"",
+          "u",
+          "[\"fileKey\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Video.Video_uploaderId_idx_debae170",
+    "label": "Create index \"Video_uploaderId_idx_debae170\" on \"Video\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Video_uploaderId_idx_debae170",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Video_uploaderId_idx_debae170\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Video_uploaderId_idx_debae170\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"Video_uploaderId_idx_debae170\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Video_uploaderId_idx_debae170\"",
+        "sql": "CREATE INDEX \"Video_uploaderId_idx_debae170\" ON \"public\".\"Video\" (\"uploaderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Video_uploaderId_idx_debae170\" exists on \"Video\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"Video_uploaderId_idx_debae170\"",
+          "i",
+          "I",
+          "\"public\".\"Video\"",
+          "btree",
+          "[\"uploaderId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Video.Video_uploaderId_fkey",
+    "label": "Add foreign key \"Video_uploaderId_fkey\" on \"Video\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Video_uploaderId_fkey",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Video_uploaderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Video_uploaderId_fkey",
+          "public",
+          "\"public\".\"Video\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"Video_uploaderId_fkey\" on \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Video_uploaderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Video\"\nADD CONSTRAINT \"Video_uploaderId_fkey\"\nFOREIGN KEY (\"uploaderId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Video_uploaderId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "Video_uploaderId_fkey",
+          "public",
+          "\"public\".\"Video\"",
+          "f",
+          "[\"uploaderId\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  }
+]
