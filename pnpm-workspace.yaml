@@ -3,7 +3,7 @@ packages:
   - "packages/*"
 allowBuilds:
   esbuild: true
-  msgpackr-extract: set this to true or false
+  msgpackr-extract: false
   workerd: true
 minimumReleaseAgeExclude:
   - '@next/env@16.4.4'
