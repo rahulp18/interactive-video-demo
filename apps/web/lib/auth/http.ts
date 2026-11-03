@@ -14,7 +14,15 @@ export function errorResponse(error: unknown): Response {
     return json(body, error.status, headers);
   }
   // Log only the error class: messages from the database layer may contain user data.
-  console.error("Unhandled auth error:", error instanceof Error ? error.name : typeof error);
+  // Codes (e.g. DRIVER.CONNECTION_FAILED, ETIMEDOUT) identify the failure without exposing messages.
+  const code = (error as { code?: unknown } | null)?.code;
+  const causeCode = ((error as { cause?: unknown } | null)?.cause as { code?: unknown } | undefined)?.code;
+  console.error(
+    "Unhandled auth error:",
+    error instanceof Error ? error.name : typeof error,
+    typeof code === "string" ? code : "",
+    typeof causeCode === "string" ? causeCode : "",
+  );
   return json({ error: { code: "INTERNAL_ERROR", message: "Something went wrong." } }, 500);
 }
 
