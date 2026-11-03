@@ -5,7 +5,7 @@ import { createSession, revokeSession, validateSession, type IssuedSession, type
 import type { LoginInput, RegisterInput } from "./validation";
 
 // Postgres unique_violation (SQLSTATE 23505): the race between two concurrent registrations of one email.
-function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
   if ("sqlState" in error && error.sqlState === "23505") return true;
   return "cause" in error && isUniqueViolation(error.cause);

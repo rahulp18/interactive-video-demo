@@ -1,0 +1,383 @@
+[
+  {
+    "id": "dropCheckConstraint.InteractionResponse.response_skipped_matches_option_164369b0",
+    "label": "Drop check constraint \"response_skipped_matches_option_164369b0\" on \"InteractionResponse\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "response_skipped_matches_option_164369b0",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"response_skipped_matches_option_164369b0\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_skipped_matches_option_164369b0",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "constraint \"response_skipped_matches_option_164369b0\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"response_skipped_matches_option_164369b0\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" DROP CONSTRAINT \"response_skipped_matches_option_164369b0\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"response_skipped_matches_option_164369b0\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_skipped_matches_option_164369b0",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"response_skipped_matches_option_164369b0\" on \"InteractionResponse\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "column.public.Interaction.answerType",
+    "label": "Add column \"answerType\" to \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "answerType",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"answerType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "answerType"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"answerType\" on \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"answerType\"",
+        "sql": "ALTER TABLE \"public\".\"Interaction\" ADD COLUMN \"answerType\" text DEFAULT 'CHOICE' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"answerType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "answerType"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"answerType\" on \"Interaction\""
+        }
+      },
+      {
+        "description": "verify column \"answerType\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "answerType",
+          "text"
+        ]
+      },
+      {
+        "description": "verify column \"answerType\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "answerType",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Interaction.correctAnswer",
+    "label": "Add column \"correctAnswer\" to \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "correctAnswer",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"correctAnswer\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "correctAnswer"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"correctAnswer\" on \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"correctAnswer\"",
+        "sql": "ALTER TABLE \"public\".\"Interaction\" ADD COLUMN \"correctAnswer\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"correctAnswer\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "correctAnswer"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"correctAnswer\" on \"Interaction\""
+        }
+      },
+      {
+        "description": "verify column \"correctAnswer\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "correctAnswer",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.InteractionResponse.textAnswer",
+    "label": "Add column \"textAnswer\" to \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "textAnswer",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"textAnswer\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "textAnswer"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"textAnswer\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"textAnswer\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD COLUMN \"textAnswer\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"textAnswer\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "textAnswer"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"textAnswer\" on \"InteractionResponse\""
+        }
+      },
+      {
+        "description": "verify column \"textAnswer\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "textAnswer",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Interaction.Interaction_answerType_check_4990b0fe",
+    "label": "Add check constraint \"Interaction_answerType_check_4990b0fe\" on \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Interaction_answerType_check_4990b0fe",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Interaction_answerType_check_4990b0fe\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Interaction_answerType_check_4990b0fe",
+          "public",
+          "\"public\".\"Interaction\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Interaction_answerType_check_4990b0fe\" on \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Interaction_answerType_check_4990b0fe\"",
+        "sql": "ALTER TABLE \"public\".\"Interaction\" ADD CONSTRAINT \"Interaction_answerType_check_4990b0fe\" CHECK (\"answerType\" IN ('CHOICE', 'TEXT'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"Interaction_answerType_check_4990b0fe\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "Interaction_answerType_check_4990b0fe",
+          "public",
+          "\"public\".\"Interaction\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.InteractionResponse.response_single_answer_kind_2713192d",
+    "label": "Add check constraint \"response_single_answer_kind_2713192d\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "response_single_answer_kind_2713192d",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"response_single_answer_kind_2713192d\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_single_answer_kind_2713192d",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"response_single_answer_kind_2713192d\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"response_single_answer_kind_2713192d\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD CONSTRAINT \"response_single_answer_kind_2713192d\" CHECK (NOT (\"selectedOptionId\" IS NOT NULL AND \"textAnswer\" IS NOT NULL))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"response_single_answer_kind_2713192d\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "response_single_answer_kind_2713192d",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.InteractionResponse.response_skipped_matches_answer_1f9f2417",
+    "label": "Add check constraint \"response_skipped_matches_answer_1f9f2417\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "response_skipped_matches_answer_1f9f2417",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"response_skipped_matches_answer_1f9f2417\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_skipped_matches_answer_1f9f2417",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"response_skipped_matches_answer_1f9f2417\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"response_skipped_matches_answer_1f9f2417\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD CONSTRAINT \"response_skipped_matches_answer_1f9f2417\" CHECK (\"isSkipped\" = (\"selectedOptionId\" IS NULL AND \"textAnswer\" IS NULL))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"response_skipped_matches_answer_1f9f2417\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "response_skipped_matches_answer_1f9f2417",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "c"
+        ]
+      }
+    ]
+  }
+]

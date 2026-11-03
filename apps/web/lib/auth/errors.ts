@@ -6,6 +6,9 @@ export type AuthErrorCode =
   | "UNAUTHENTICATED"
   | "EMAIL_TAKEN"
   | "FORBIDDEN_ORIGIN"
+  | "NOT_FOUND"
+  | "CONFLICT"
+  | "RATE_LIMITED"
   | "INTERNAL_ERROR";
 
 const STATUS: Record<AuthErrorCode, number> = {
@@ -16,6 +19,9 @@ const STATUS: Record<AuthErrorCode, number> = {
   UNAUTHENTICATED: 401,
   EMAIL_TAKEN: 409,
   FORBIDDEN_ORIGIN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  RATE_LIMITED: 429,
   INTERNAL_ERROR: 500,
 };
 

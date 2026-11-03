@@ -6,6 +6,13 @@ enum InteractionType {
   QUIZ   = "QUIZ"
 }
 
+// How a viewer answers: pick one of the options, or type free text.
+enum AnswerType {
+  @@type("pg/text@1")
+  CHOICE = "CHOICE"
+  TEXT   = "TEXT"
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
@@ -45,6 +52,10 @@ model Video {
   sizeBytes    Int
   // UploadThing file key; unique so a repeated completion callback cannot create a second row
   fileKey      String   @unique
+  // Unguessable token of the public watch link (/watch/<shareId>). Null while the video is private; clearing it revokes the link.
+  shareId      String?  @unique
+  // Appears in the platform Library for signed-in viewers. Only meaningful while shareId is set.
+  isListed     Boolean  @default(false)
   uploaderId   Int
   uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: NoAction)
   interactions Interaction[]
@@ -64,6 +75,9 @@ model Interaction {
   timestamp   Float
   type        InteractionType
   question    String
+  answerType  AnswerType      @default(CHOICE)
+  // TEXT quizzes only: the expected answer (compared case- and whitespace-insensitively)
+  correctAnswer String?
   isSkippable Boolean         @default(false)
   // Display order among interactions at the same timestamp
   position    Int             @default(0)
@@ -103,6 +117,8 @@ model InteractionResponse {
   selectedOptionId Int?
   // Guarantees the selected option belongs to this same interaction
   selectedOption   InteractionOption? @relation(fields: [selectedOptionId, interactionId], references: [id, interactionId], onDelete: NoAction)
+  // Set for TEXT interactions instead of selectedOptionId
+  textAnswer       String?
   isSkipped        Boolean     @default(false)
   createdAt        temporal.CreatedAt
   updatedAt        temporal.UpdatedAt
@@ -110,5 +126,6 @@ model InteractionResponse {
   @@unique([userId, interactionId])
   @@index([interactionId])
   @@index([selectedOptionId])
-  @@check(expression: sql`"isSkipped" = ("selectedOptionId" IS NULL)`, name: "response_skipped_matches_option")
+  @@check(expression: sql`"isSkipped" = ("selectedOptionId" IS NULL AND "textAnswer" IS NULL)`, name: "response_skipped_matches_answer")
+  @@check(expression: sql`NOT ("selectedOptionId" IS NOT NULL AND "textAnswer" IS NOT NULL)`, name: "response_single_answer_kind")
 }

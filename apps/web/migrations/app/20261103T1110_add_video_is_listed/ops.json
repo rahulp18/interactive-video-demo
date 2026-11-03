@@ -1,0 +1,72 @@
+[
+  {
+    "id": "column.public.Video.isListed",
+    "label": "Add column \"isListed\" to \"Video\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isListed",
+        "table": "Video"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isListed\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "isListed"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"isListed\" on \"Video\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isListed\"",
+        "sql": "ALTER TABLE \"public\".\"Video\" ADD COLUMN \"isListed\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isListed\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "isListed"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"isListed\" on \"Video\""
+        }
+      },
+      {
+        "description": "verify column \"isListed\" has type \"boolean\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "isListed",
+          "boolean"
+        ]
+      },
+      {
+        "description": "verify column \"isListed\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Video",
+          "isListed",
+          "NO"
+        ]
+      }
+    ]
+  }
+]

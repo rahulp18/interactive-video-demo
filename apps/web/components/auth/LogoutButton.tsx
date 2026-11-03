@@ -2,15 +2,25 @@
 
 import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { authApi } from "@/lib/auth/client";
+import { cn } from "@/lib/utils";
 
-export function LogoutButton() {
+export function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
+
+  // The dashboard is kept hidden (not unmounted) after navigating away; reset so a later sign-in doesn't show "Logging out…".
+  useLayoutEffect(
+    () => () => {
+      setPending(false);
+      setFailed(false);
+    },
+    [],
+  );
 
   async function onClick() {
     setPending(true);
@@ -28,7 +38,7 @@ export function LogoutButton() {
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className={cn("flex items-center gap-3", className)}>
       {failed && (
         <Alert variant="destructive" className="w-auto py-1.5">
           <AlertDescription>Could not log out. Try again.</AlertDescription>

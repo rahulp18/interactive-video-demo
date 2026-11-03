@@ -5,12 +5,15 @@ import type { FormEvent } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FieldGroup } from "@/components/ui/field";
 import { authApi } from "@/lib/auth/client";
+import { withNext } from "@/lib/auth/redirect";
 import { validateLogin } from "@/lib/auth/forms";
 import { SubmitButton } from "./submit-button";
 import { TextField } from "./text-field";
 import { useAuthForm } from "./use-auth-form";
+import { useNextParam } from "./use-next-param";
 
 export function LoginForm() {
+  const next = useNextParam();
   const form = useAuthForm<"email" | "password">();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -36,9 +39,9 @@ export function LoginForm() {
   return (
     <>
       <form
-        ref={form.formRef}
+        key={form.resetKey}
         onSubmit={onSubmit}
-        onChange={(e) => form.clearError((e.target as HTMLInputElement).name)}
+        onChange={(e) => e.target instanceof HTMLInputElement && form.clearError(e.target.name)}
         noValidate
         aria-busy={form.submitting}
       >
@@ -74,7 +77,7 @@ export function LoginForm() {
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
+        <Link href={withNext("/register", next)} className="font-medium text-foreground underline underline-offset-4">
           Create one
         </Link>
       </p>

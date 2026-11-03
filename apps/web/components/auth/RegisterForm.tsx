@@ -6,12 +6,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FieldGroup } from "@/components/ui/field";
 import { ApiError, authApi } from "@/lib/auth/client";
 import { validateRegister } from "@/lib/auth/forms";
+import { withNext } from "@/lib/auth/redirect";
 import { PASSWORD_MIN } from "@/lib/auth/validation";
 import { SubmitButton } from "./submit-button";
 import { TextField } from "./text-field";
 import { useAuthForm } from "./use-auth-form";
+import { useNextParam } from "./use-next-param";
 
 export function RegisterForm() {
+  const next = useNextParam();
   const form = useAuthForm<"name" | "email" | "password" | "confirmPassword">();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -41,10 +44,11 @@ export function RegisterForm() {
   return (
     <>
       <form
-        ref={form.formRef}
+        key={form.resetKey}
         onSubmit={onSubmit}
         onChange={(e) => {
-          const { name } = e.target as HTMLInputElement;
+          if (!(e.target instanceof HTMLInputElement)) return;
+          const { name } = e.target;
           form.clearError(name);
           if (name === "password") form.clearError("confirmPassword");
         }}
@@ -92,7 +96,7 @@ export function RegisterForm() {
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+        <Link href={withNext("/login", next)} className="font-medium text-foreground underline underline-offset-4">
           Log in
         </Link>
       </p>

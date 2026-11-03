@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'26f8069f376384678d8ed024a4a9110cc30b7b4ee418f74d7249c156980e870a'>;
+  StorageHashBase<'51937ca0771907531560fa3c0bb9151b1581de27230b563a0be854de495677bc'>;
 export type ExecutionHash =
   ExecutionHashBase<'3f263b1c4fa43d188e61bdb02b6c0947a08555179ce28063aac5cae7e766e666'>;
 export type ProfileHash =
@@ -279,6 +279,10 @@ type FieldTypeOverrides = {
   readonly public: {
     readonly models: {
       readonly Interaction: {
+        readonly answerType: {
+          readonly output: 'CHOICE' | 'TEXT';
+          readonly input: 'CHOICE' | 'TEXT';
+        };
         readonly type: { readonly output: 'SURVEY' | 'QUIZ'; readonly input: 'SURVEY' | 'QUIZ' };
       };
     };
@@ -303,6 +307,10 @@ export type FieldInputTypes = FieldTypesFromDomain<
 type ColumnTypeOverrides = {
   readonly public: {
     readonly Interaction: {
+      readonly answerType: {
+        readonly output: 'CHOICE' | 'TEXT';
+        readonly input: 'CHOICE' | 'TEXT';
+      };
       readonly type: { readonly output: 'SURVEY' | 'QUIZ'; readonly input: 'SURVEY' | 'QUIZ' };
     };
   };
@@ -324,6 +332,8 @@ export type StorageColumnInputTypes = ColumnTypesFromStorage<
 
 export namespace Models {
   export type public_Interaction = {
+    answerType: FieldOutputTypes['public']['Interaction']['answerType'];
+    correctAnswer: FieldOutputTypes['public']['Interaction']['correctAnswer'];
     createdAt: FieldOutputTypes['public']['Interaction']['createdAt'];
     id: FieldOutputTypes['public']['Interaction']['id'];
     isSkippable: FieldOutputTypes['public']['Interaction']['isSkippable'];
@@ -354,6 +364,7 @@ export namespace Models {
     interactionId: FieldOutputTypes['public']['InteractionResponse']['interactionId'];
     isSkipped: FieldOutputTypes['public']['InteractionResponse']['isSkipped'];
     selectedOptionId: FieldOutputTypes['public']['InteractionResponse']['selectedOptionId'];
+    textAnswer: FieldOutputTypes['public']['InteractionResponse']['textAnswer'];
     updatedAt: FieldOutputTypes['public']['InteractionResponse']['updatedAt'];
     userId: FieldOutputTypes['public']['InteractionResponse']['userId'];
     interaction: public_Interaction;
@@ -389,8 +400,10 @@ export namespace Models {
     fileKey: FieldOutputTypes['public']['Video']['fileKey'];
     fileUrl: FieldOutputTypes['public']['Video']['fileUrl'];
     id: FieldOutputTypes['public']['Video']['id'];
+    isListed: FieldOutputTypes['public']['Video']['isListed'];
     mimeType: FieldOutputTypes['public']['Video']['mimeType'];
     originalName: FieldOutputTypes['public']['Video']['originalName'];
+    shareId: FieldOutputTypes['public']['Video']['shareId'];
     sizeBytes: FieldOutputTypes['public']['Video']['sizeBytes'];
     title: FieldOutputTypes['public']['Video']['title'];
     updatedAt: FieldOutputTypes['public']['Video']['updatedAt'];
@@ -432,6 +445,22 @@ type ContractBase = Omit<
           readonly table: {
             readonly Interaction: {
               columns: {
+                readonly answerType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'CHOICE'>;
+                  };
+                  readonly many: false;
+                };
+                readonly correctAnswer: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -643,6 +672,12 @@ type ContractBase = Omit<
                 readonly selectedOptionId: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly textAnswer: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                   readonly many: false;
                 };
@@ -891,6 +926,16 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly isListed: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                  readonly many: false;
+                };
                 readonly mimeType: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -901,6 +946,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly shareId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly sizeBytes: {
@@ -930,7 +981,10 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['fileKey'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['fileKey'] },
+                { readonly columns: readonly ['shareId'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'Video_uploaderId_idx_debae170';
@@ -956,6 +1010,10 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly AnswerType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['CHOICE', 'TEXT'];
+            };
             readonly InteractionType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['SURVEY', 'QUIZ'];
@@ -993,6 +1051,14 @@ type ContractBase = Omit<
         readonly models: {
           readonly Interaction: {
             readonly fields: {
+              readonly answerType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly correctAnswer: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -1078,6 +1144,8 @@ type ContractBase = Omit<
               readonly table: 'Interaction';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly answerType: { readonly column: 'answerType' };
+                readonly correctAnswer: { readonly column: 'correctAnswer' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly isSkippable: { readonly column: 'isSkippable' };
@@ -1176,6 +1244,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly textAnswer: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -1233,6 +1305,7 @@ type ContractBase = Omit<
                 readonly interactionId: { readonly column: 'interactionId' };
                 readonly isSkipped: { readonly column: 'isSkipped' };
                 readonly selectedOptionId: { readonly column: 'selectedOptionId' };
+                readonly textAnswer: { readonly column: 'textAnswer' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
               };
@@ -1410,12 +1483,20 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly isListed: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly mimeType: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly originalName: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly shareId: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly sizeBytes: {
@@ -1470,8 +1551,10 @@ type ContractBase = Omit<
                 readonly fileKey: { readonly column: 'fileKey' };
                 readonly fileUrl: { readonly column: 'fileUrl' };
                 readonly id: { readonly column: 'id' };
+                readonly isListed: { readonly column: 'isListed' };
                 readonly mimeType: { readonly column: 'mimeType' };
                 readonly originalName: { readonly column: 'originalName' };
+                readonly shareId: { readonly column: 'shareId' };
                 readonly sizeBytes: { readonly column: 'sizeBytes' };
                 readonly title: { readonly column: 'title' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -1481,6 +1564,13 @@ type ContractBase = Omit<
           };
         };
         readonly enum: {
+          readonly AnswerType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'CHOICE'; readonly value: 'CHOICE' },
+              { readonly name: 'TEXT'; readonly value: 'TEXT' },
+            ];
+          };
           readonly InteractionType: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -1490,6 +1580,10 @@ type ContractBase = Omit<
           };
         };
         readonly enumMemberTypes?: {
+          readonly AnswerType: readonly [
+            { readonly name: 'CHOICE'; readonly value: 'CHOICE' },
+            { readonly name: 'TEXT'; readonly value: 'TEXT' },
+          ];
           readonly InteractionType: readonly [
             { readonly name: 'SURVEY'; readonly value: 'SURVEY' },
             { readonly name: 'QUIZ'; readonly value: 'QUIZ' },

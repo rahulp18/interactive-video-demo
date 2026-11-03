@@ -33,6 +33,19 @@
     "namespaces": {
       "public": {
         "enum": {
+          "AnswerType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "CHOICE",
+                "value": "CHOICE"
+              },
+              {
+                "name": "TEXT",
+                "value": "TEXT"
+              }
+            ]
+          },
           "InteractionType": {
             "codecId": "pg/text@1",
             "members": [
@@ -50,6 +63,26 @@
         "models": {
           "Interaction": {
             "fields": {
+              "answerType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AnswerType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "correctAnswer": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -176,6 +209,12 @@
             },
             "storage": {
               "fields": {
+                "answerType": {
+                  "column": "answerType"
+                },
+                "correctAnswer": {
+                  "column": "correctAnswer"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -343,6 +382,13 @@
                   "kind": "scalar"
                 }
               },
+              "textAnswer": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -429,6 +475,9 @@
                 },
                 "selectedOptionId": {
                   "column": "selectedOptionId"
+                },
+                "textAnswer": {
+                  "column": "textAnswer"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -701,6 +750,13 @@
                   "kind": "scalar"
                 }
               },
+              "isListed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "mimeType": {
                 "nullable": false,
                 "type": {
@@ -710,6 +766,13 @@
               },
               "originalName": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "shareId": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -797,11 +860,17 @@
                 "id": {
                   "column": "id"
                 },
+                "isListed": {
+                  "column": "isListed"
+                },
                 "mimeType": {
                   "column": "mimeType"
                 },
                 "originalName": {
                   "column": "originalName"
+                },
+                "shareId": {
+                  "column": "shareId"
                 },
                 "sizeBytes": {
                   "column": "sizeBytes"
@@ -832,6 +901,11 @@
             "Interaction": {
               "checks": [
                 {
+                  "expression": "\"answerType\" IN ('CHOICE', 'TEXT')",
+                  "name": "Interaction_answerType_check_4990b0fe",
+                  "prefix": "Interaction_answerType_check"
+                },
+                {
                   "expression": "\"type\" IN ('SURVEY', 'QUIZ')",
                   "name": "Interaction_type_check_ea447555",
                   "prefix": "Interaction_type_check"
@@ -848,6 +922,26 @@
                 }
               ],
               "columns": {
+                "answerType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "CHOICE"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AnswerType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "correctAnswer": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "dataType": "pg/timestamptz",
@@ -1069,9 +1163,14 @@
             "InteractionResponse": {
               "checks": [
                 {
-                  "expression": "\"isSkipped\" = (\"selectedOptionId\" IS NULL)",
-                  "name": "response_skipped_matches_option_164369b0",
-                  "prefix": "response_skipped_matches_option"
+                  "expression": "NOT (\"selectedOptionId\" IS NOT NULL AND \"textAnswer\" IS NOT NULL)",
+                  "name": "response_single_answer_kind_2713192d",
+                  "prefix": "response_single_answer_kind"
+                },
+                {
+                  "expression": "\"isSkipped\" = (\"selectedOptionId\" IS NULL AND \"textAnswer\" IS NULL)",
+                  "name": "response_skipped_matches_answer_1f9f2417",
+                  "prefix": "response_skipped_matches_answer"
                 }
               ],
               "columns": {
@@ -1109,6 +1208,11 @@
                 "selectedOptionId": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "textAnswer": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "updatedAt": {
@@ -1440,6 +1544,15 @@
                   },
                   "nullable": false
                 },
+                "isListed": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
                 "mimeType": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -1449,6 +1562,11 @@
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "shareId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "sizeBytes": {
                   "codecId": "pg/int4@1",
@@ -1515,11 +1633,23 @@
                   "columns": [
                     "fileKey"
                   ]
+                },
+                {
+                  "columns": [
+                    "shareId"
+                  ]
                 }
               ]
             }
           },
           "valueSet": {
+            "AnswerType": {
+              "kind": "valueSet",
+              "values": [
+                "CHOICE",
+                "TEXT"
+              ]
+            },
             "InteractionType": {
               "kind": "valueSet",
               "values": [
@@ -1533,7 +1663,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "26f8069f376384678d8ed024a4a9110cc30b7b4ee418f74d7249c156980e870a"
+    "storageHash": "51937ca0771907531560fa3c0bb9151b1581de27230b563a0be854de495677bc"
   },
   "execution": {
     "executionHash": "3f263b1c4fa43d188e61bdb02b6c0947a08555179ce28063aac5cae7e766e666",
