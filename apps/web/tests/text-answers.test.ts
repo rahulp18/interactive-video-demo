@@ -29,7 +29,7 @@ describe("text answers", () => {
 
   describe("end to end", () => {
     const emails: string[] = [];
-    let owner = 0, viewer = 0, videoId = 0, shareId = "", quizId = 0, surveyId = 0;
+    let owner = 0, viewer = 0, graderA = 0, graderB = 0, videoId = 0, shareId = "", quizId = 0, surveyId = 0;
     beforeAll(async () => {
       const mk = async (l: string) => {
         const email = `${l}-${randomUUID()}@example.com`;
@@ -38,6 +38,8 @@ describe("text answers", () => {
       };
       owner = await mk("txt-owner");
       viewer = await mk("txt-viewer");
+      graderA = await mk("txt-grader-a");
+      graderB = await mk("txt-grader-b");
       const key = `key-${randomUUID()}`;
       videoId = (await db.orm.public.Video.create({ title: "T", fileUrl: `https://example.ufs.sh/f/${key}`, duration: 60, mimeType: "video/mp4", originalName: "t.mp4", sizeBytes: 1, fileKey: key, uploaderId: owner })).id;
       quizId = (await createInteraction(owner, videoId, { ...base, type: "QUIZ", answerType: "TEXT", correctAnswer: "Paris", question: "Capital of France?" })).id;
@@ -61,19 +63,21 @@ describe("text answers", () => {
     });
 
     it("grades typed quiz answers case/space-insensitively and reveals the expected answer afterwards", async () => {
-      expect(await checkPublicAnswer(shareId, quizId, { text: "  pARIS " })).toEqual({ type: "QUIZ", correct: true, correctOptionId: null, correctAnswer: "Paris" });
-      expect(await checkPublicAnswer(shareId, quizId, { text: "Lyon" })).toMatchObject({ correct: false, correctAnswer: "Paris" });
+      expect(await checkPublicAnswer(shareId, quizId, { text: "  pARIS " }, graderA)).toEqual({ type: "QUIZ", correct: true, correctOptionId: null, correctAnswer: "Paris" });
+      expect(await checkPublicAnswer(shareId, quizId, { text: "Lyon" }, graderB)).toMatchObject({ correct: false, correctAnswer: "Paris" });
+      await db.orm.public.InteractionResponse.where((r) => r.userId.in([graderA, graderB])).deleteAll(); // keep the summary test below clean
     });
 
     it("rejects empty, oversized and wrong-shaped answers", async () => {
       for (const body of [{ text: "   " }, { text: "x".repeat(501) }, { optionId: 1 }, {}, { text: 5 }]) {
-        await expect(checkPublicAnswer(shareId, quizId, body)).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+        await expect(checkPublicAnswer(shareId, quizId, body, graderA)).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
       }
+      await expect(checkPublicAnswer(shareId, quizId, { text: "Paris" })).rejects.toMatchObject({ code: "UNAUTHENTICATED" }); // anonymous
     });
 
-    it("stores typed answers for signed-in viewers (first stands) and summarises them", async () => {
-      await checkPublicAnswer(shareId, quizId, { text: "paris" }, viewer);
-      await checkPublicAnswer(shareId, quizId, { text: "Rome" }, viewer); // replay: ignored
+    it("stores typed answers for signed-in viewers (latest stands) and summarises them", async () => {
+      await checkPublicAnswer(shareId, quizId, { text: "Rome" }, viewer);
+      await checkPublicAnswer(shareId, quizId, { text: "paris" }, viewer); // answering again replaces it (latest wins)
       await checkPublicAnswer(shareId, surveyId, { text: "Loved it, <b>great</b>" }, viewer);
       const rows = await db.orm.public.InteractionResponse.where({ userId: viewer }).all();
       expect(rows).toHaveLength(2);

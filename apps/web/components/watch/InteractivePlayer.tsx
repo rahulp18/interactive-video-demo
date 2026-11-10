@@ -21,8 +21,12 @@ type Props = {
   src: string;
   duration: number;
   interactions: PublicInteraction[];
-  /** Interactions this signed-in viewer already answered earlier; they are not asked again. */
+  /** Optional: interactions to treat as already done (not asked). */
   answeredIds?: number[];
+  /** Whether the viewer is signed in. Only signed-in viewers can answer, so anonymous ones get a sign-in prompt. */
+  signedIn?: boolean;
+  /** Where the sign-in / register links should return to. */
+  returnTo?: string;
 };
 
 const clock = (s: number) => formatPreciseTimestamp(s).replace(/\.\d$/, "");
@@ -33,7 +37,7 @@ const supportsFullscreen = () => typeof document !== "undefined" && document.ful
  * Viewer-facing player. Playback pauses when it reaches an interaction and resumes after it is answered or (when
  * allowed) skipped. Required interactions cannot be bypassed by seeking: a forward seek past one lands on it.
  */
-export function InteractivePlayer({ shareId, src, duration: durationHint, interactions, answeredIds = [] }: Props) {
+export function InteractivePlayer({ shareId, src, duration: durationHint, interactions, answeredIds = [], signedIn = false, returnTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const doneRef = useRef(new Set<number>(answeredIds));
@@ -216,7 +220,7 @@ export function InteractivePlayer({ shareId, src, duration: durationHint, intera
         </div>
       )}
 
-      {active && <InteractionOverlay key={active.id} shareId={shareId} interaction={active} onDone={finishInteraction} />}
+      {active && <InteractionOverlay key={active.id} shareId={shareId} interaction={active} signedIn={signedIn} returnTo={returnTo} onDone={finishInteraction} />}
 
       <div className="space-y-2 bg-neutral-950 px-3 pt-2 pb-3 text-white" {...(active ? { inert: true } : {})}>
         <div className="relative h-5">

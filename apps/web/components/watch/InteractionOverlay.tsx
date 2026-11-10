@@ -1,11 +1,13 @@
 "use client";
 
 import { CheckCircle2Icon, LoaderCircleIcon, XCircleIcon } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { TYPE_LABEL } from "@/components/editor/TypeBadge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { withNext } from "@/lib/auth/redirect";
 import { ANSWER_TEXT_MAX } from "@/lib/interactions/model";
 import { skipInteraction, submitAnswer, submitText } from "@/lib/watch/client";
 import type { AnswerResult, PublicInteraction } from "@/lib/watch/service";
@@ -14,6 +16,9 @@ import { cn } from "@/lib/utils";
 type Props = {
   shareId: string;
   interaction: PublicInteraction;
+  /** Only signed-in viewers can answer; anonymous ones see a sign-in prompt instead of the form. */
+  signedIn: boolean;
+  returnTo?: string;
   /** Called after the viewer answered (and saw feedback) or skipped. */
   onDone: () => void;
 };
@@ -24,7 +29,7 @@ const FOCUSABLE = 'input, textarea, button, a[href], [tabindex]:not([tabindex="-
  * Modal question shown when playback reaches an interaction. A bottom sheet on small screens, centred over the player
  * from md up. Required interactions have no skip control. Focus moves in on open and is trapped until it closes.
  */
-export function InteractionOverlay({ shareId, interaction, onDone }: Props) {
+export function InteractionOverlay({ shareId, interaction, signedIn, returnTo, onDone }: Props) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -59,6 +64,7 @@ export function InteractionOverlay({ shareId, interaction, onDone }: Props) {
   }
 
   async function skip() {
+    if (!signedIn) return onDone(); // nothing to record; only an optional question gets here
     setPhase("submitting");
     // Recording the skip is best effort: a network hiccup must never trap the viewer on an optional question.
     await skipInteraction(shareId, interaction.id).catch(() => {});
@@ -94,6 +100,33 @@ export function InteractionOverlay({ shareId, interaction, onDone }: Props) {
         data-testid="interaction-overlay"
         className="max-h-[90dvh] w-full overflow-y-auto rounded-t-2xl bg-background p-5 text-foreground shadow-2xl md:max-h-full md:max-w-lg md:rounded-2xl"
       >
+        {!signedIn ? (
+          <div className="space-y-4" data-testid="signin-required">
+            <div>
+              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {TYPE_LABEL[interaction.type]}
+                {interaction.isSkippable ? " · optional" : ""}
+              </span>
+              <span id={titleId} className="mt-1 block text-lg leading-snug font-semibold">
+                {interaction.question}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">Sign in to answer.</p>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {interaction.isSkippable && (
+                <Button type="button" variant="ghost" size="lg" onClick={onDone}>
+                  Skip
+                </Button>
+              )}
+              <Link href={withNext("/register", returnTo)} className={buttonVariants({ variant: "outline", size: "lg" })}>
+                Create account
+              </Link>
+              <Link href={withNext("/login", returnTo)} className={buttonVariants({ size: "lg" })} autoFocus>
+                Sign in
+              </Link>
+            </div>
+          </div>
+        ) : (
         <form onSubmit={submit} className="space-y-4">
           <fieldset className="space-y-3" disabled={locked}>
             <legend className="w-full">
@@ -207,6 +240,7 @@ export function InteractionOverlay({ shareId, interaction, onDone }: Props) {
             )}
           </div>
         </form>
+        )}
       </div>
     </div>
   );

@@ -84,19 +84,20 @@ describe("responses, results and library", () => {
     }
   });
 
-  it("stores signed-in answers (first one stands), never anonymous ones", async () => {
+  it("stores signed-in answers (latest one stands), never anonymous ones", async () => {
     expect((await (await answer(quizId, { optionId: optA }, "ann")).json()).correct).toBe(true);
-    // replay with a different choice is graded but must not rewrite the stored answer
+    // answering again (e.g. after a refresh) replaces the stored answer, still one row
     expect((await (await answer(quizId, { optionId: optB }, "ann")).json()).correct).toBe(false);
+    expect((await (await answer(quizId, { optionId: optA }, "ann")).json()).correct).toBe(true);
     await answer(surveyId, { optionId: sOpt1 }, "ann");
     await answer(quizId, { optionId: optB }, "bob");
     expect((await (await answer(surveyId, { skip: true }, "bob")).json()).type).toBe("SKIPPED");
-    await answer(quizId, { optionId: optA }); // anonymous
-    await answer(surveyId, { optionId: sOpt2 }); // anonymous
+    expect((await answer(quizId, { optionId: optA })).status).toBe(401); // anonymous
+    expect((await answer(surveyId, { optionId: sOpt2 })).status).toBe(401); // anonymous
 
     const stored = await db.orm.public.InteractionResponse.where({ userId: users.ann.id }).where({ interactionId: quizId }).all();
     expect(stored).toHaveLength(1);
-    expect(stored[0].selectedOptionId).toBe(optA);
+    expect(stored[0].selectedOptionId).toBe(optA); // the latest answer
     const all = await db.orm.public.InteractionResponse.where((r) => r.interactionId.in([quizId, surveyId])).all();
     expect(all).toHaveLength(4); // ann x2, bob x2 - no anonymous rows
     expect((await getViewerAnsweredIds(users.ann.id, shareId)).sort()).toEqual([quizId, surveyId].sort());

@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/server";
 import { withNext } from "@/lib/auth/redirect";
-import { getPublicVideo, getViewerAnsweredIds } from "@/lib/watch/service";
+import { getPublicVideo } from "@/lib/watch/service";
 
 // Unlisted: reachable only by whoever has the link, and kept out of search indexes.
 export const metadata: Metadata = {
@@ -31,7 +31,6 @@ async function Watch({ params }: Pick<PageProps<"/watch/[shareId]">, "params">) 
   if (!video) notFound();
   const count = video.interactions.length;
   const viewer = await getCurrentUser();
-  const answeredIds = viewer ? await getViewerAnsweredIds(viewer.id, shareId) : [];
   const here = `/watch/${shareId}`;
   return (
     <article className="space-y-4">
@@ -43,7 +42,7 @@ async function Watch({ params }: Pick<PageProps<"/watch/[shareId]">, "params">) 
           </p>
         )}
       </header>
-      <InteractivePlayer shareId={shareId} src={video.fileUrl} duration={video.duration} interactions={video.interactions} answeredIds={answeredIds} />
+      <InteractivePlayer shareId={shareId} src={video.fileUrl} duration={video.duration} interactions={video.interactions} signedIn={viewer !== null} returnTo={here} />
       {count > 0 && (
         <aside className="rounded-lg border bg-muted/40 px-4 py-3 text-sm" data-testid="viewer-notice">
           {viewer ? (
@@ -53,7 +52,7 @@ async function Watch({ params }: Pick<PageProps<"/watch/[shareId]">, "params">) 
           ) : (
             <p>
               <Link href={withNext("/login", here)} className="font-medium underline underline-offset-4">Sign in</Link> or{" "}
-              <Link href={withNext("/register", here)} className="font-medium underline underline-offset-4">create an account</Link> to save your answers. Without an account you can still answer, but nothing is recorded.
+              <Link href={withNext("/register", here)} className="font-medium underline underline-offset-4">create an account</Link> to answer the questions. You need an account to answer; answering again replaces your earlier answer.
             </p>
           )}
         </aside>

@@ -105,17 +105,31 @@ describe("public sharing and answers", () => {
 
   it("grades quiz answers server-side and validates survey answers", async () => {
     const { shareId } = (await db.orm.public.Video.where({ id: videoId }).first())! as { shareId: string };
-    expect(await (await answer(shareId, quizId, { optionId: wrongId })).json()).toEqual({ type: "QUIZ", correct: false, correctOptionId: correctId, correctAnswer: null });
-    expect(await (await answer(shareId, quizId, { optionId: correctId })).json()).toEqual({ type: "QUIZ", correct: true, correctOptionId: correctId, correctAnswer: null });
-    expect(await (await answer(shareId, surveyId, { optionId: surveyOptionId })).json()).toEqual({ type: "SURVEY" });
+    const as = { authorization: `Bearer ${tokenOther}` };
+    expect(await (await answer(shareId, quizId, { optionId: wrongId }, as)).json()).toEqual({ type: "QUIZ", correct: false, correctOptionId: correctId, correctAnswer: null });
+    expect(await (await answer(shareId, surveyId, { optionId: surveyOptionId }, as)).json()).toEqual({ type: "SURVEY" });
     // option of another interaction, missing, wrong type, unknown interaction
-    expect((await answer(shareId, quizId, { optionId: surveyOptionId })).status).toBe(400);
-    expect((await answer(shareId, quizId, {})).status).toBe(400);
-    expect((await answer(shareId, quizId, { optionId: "1" })).status).toBe(400);
-    expect((await answer(shareId, 999999999, { optionId: 1 })).status).toBe(404);
-    expect((await answer(shareId, quizId, { optionId: correctId }, { origin: "https://evil.example" })).status).toBe(403);
-    // nothing is persisted for anonymous viewers
-    expect(await db.orm.public.InteractionResponse.where({ interactionId: quizId }).all()).toHaveLength(0);
+    expect((await answer(shareId, quizId, { optionId: surveyOptionId }, as)).status).toBe(400); // option of another interaction
+    expect((await answer(shareId, 999999999, { optionId: 1 }, as)).status).toBe(404);
+    expect((await answer(shareId, quizId, { optionId: correctId }, { ...as, origin: "https://evil.example" })).status).toBe(403);
+  });
+
+  it("only signed-in viewers can answer; answering again replaces the earlier answer", async () => {
+    const { shareId } = (await db.orm.public.Video.where({ id: videoId }).first())! as { shareId: string };
+    const before = await db.orm.public.InteractionResponse.where({ interactionId: quizId }).all();
+    // anonymous: rejected, nothing stored
+    expect((await answer(shareId, quizId, { optionId: correctId })).status).toBe(401);
+    expect(await db.orm.public.InteractionResponse.where({ interactionId: quizId }).all()).toHaveLength(before.length);
+    // owner answers, then answers again: still one row, holding the latest answer
+    const as = { authorization: `Bearer ${tokenOwner}` };
+    expect((await answer(shareId, quizId, { optionId: wrongId }, as)).status).toBe(200);
+    expect((await answer(shareId, quizId, { optionId: correctId }, as)).status).toBe(200);
+    const mine = await db.orm.public.InteractionResponse.where({ userId: owner, interactionId: quizId }).all();
+    expect(mine).toHaveLength(1);
+    expect(mine[0].selectedOptionId).toBe(correctId);
+    // validation still applies for a fresh question
+    expect((await answer(shareId, surveyId, {}, as)).status).toBe(400);
+    expect((await answer(shareId, surveyId, { optionId: "1" }, as)).status).toBe(400);
   });
 
   it("revoking stops access at once and re-enabling issues a new token", async () => {

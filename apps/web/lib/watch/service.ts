@@ -113,8 +113,9 @@ export type AnswerResult =
 /**
  * Validates a viewer's answer against the shared video's own interaction and, for quizzes, reveals correctness only
  * now (never before an answer is given). Choice questions take `{ optionId }`, text questions `{ text }`, and
- * `{ skip: true }` is accepted only for skippable interactions. Signed-in viewers' answers are stored once per
- * interaction (the first answer stands, so a replay cannot rewrite results); anonymous answers are graded, not stored.
+ * `{ skip: true }` is accepted only for skippable interactions. Only signed-in viewers may answer (UNAUTHENTICATED
+ * otherwise). A viewer may answer again (e.g. after a refresh); the stored response is replaced, so there is still
+ * exactly one response per viewer and interaction and the owner sees the latest answer.
  */
 export async function checkPublicAnswer(shareId: string, interactionId: number, body: unknown, viewerId: number | null = null): Promise<AnswerResult> {
   const notFound = new AuthError("NOT_FOUND", "Not found.");
@@ -123,20 +124,22 @@ export async function checkPublicAnswer(shareId: string, interactionId: number, 
   if (!video) throw notFound;
   const interaction = await db.orm.public.Interaction.where({ id: interactionId, videoId: video.id }).include("options").first();
   if (!interaction) throw notFound;
+  if (viewerId === null) throw new AuthError("UNAUTHENTICATED", "Sign in to answer questions.");
 
   const raw = typeof body === "object" && body !== null ? (body as { optionId?: unknown; text?: unknown; skip?: unknown }) : {};
   const store = async (answer: { selectedOptionId: number } | { textAnswer: string } | null) => {
-    if (viewerId === null) return;
+    const data = {
+      selectedOptionId: answer && "selectedOptionId" in answer ? answer.selectedOptionId : null,
+      textAnswer: answer && "textAnswer" in answer ? answer.textAnswer : null,
+      isSkipped: answer === null,
+    };
+    const replace = () => db.orm.public.InteractionResponse.where({ userId: viewerId, interactionId }).updateAll(data);
+    if (await db.orm.public.InteractionResponse.where({ userId: viewerId, interactionId }).first()) return void (await replace());
     try {
-      await db.orm.public.InteractionResponse.create({
-        userId: viewerId,
-        interactionId,
-        selectedOptionId: answer && "selectedOptionId" in answer ? answer.selectedOptionId : null,
-        textAnswer: answer && "textAnswer" in answer ? answer.textAnswer : null,
-        isSkipped: answer === null,
-      });
+      await db.orm.public.InteractionResponse.create({ userId: viewerId, interactionId, ...data });
     } catch (error) {
-      if (!isUniqueViolation(error)) throw error; // already answered: keep the first response
+      if (!isUniqueViolation(error)) throw error;
+      await replace(); // concurrent first answer: the latest one wins
     }
   };
 
