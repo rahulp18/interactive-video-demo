@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircleIcon } from "lucide-react";
+import { LoaderCircleIcon, LogOutIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { authApi } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 
-export function LogoutButton({ className }: { className?: string }) {
+/** `rail`: icon-only (label read by screen readers) until the `lg` breakpoint, for the collapsed tablet sidebar. */
+export function LogoutButton({ className, rail = false }: { className?: string; rail?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -44,9 +45,9 @@ export function LogoutButton({ className }: { className?: string }) {
           <AlertDescription>Could not log out. Try again.</AlertDescription>
         </Alert>
       )}
-      <Button variant="outline" onClick={onClick} disabled={pending}>
-        {pending && <LoaderCircleIcon className="animate-spin" aria-hidden />}
-        {pending ? "Logging out…" : "Log out"}
+      <Button variant="outline" onClick={onClick} disabled={pending} title={rail ? "Log out" : undefined}>
+        {pending ? <LoaderCircleIcon className="animate-spin" aria-hidden /> : rail && <LogOutIcon aria-hidden className="lg:hidden" />}
+        <span className={cn(rail && "max-lg:sr-only")}>{pending ? "Logging out…" : "Log out"}</span>
       </Button>
     </div>
   );

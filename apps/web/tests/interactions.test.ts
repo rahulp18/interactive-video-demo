@@ -93,7 +93,7 @@ describe("videos & interactions API", () => {
   async function makeUser(label: string) {
     const email = `${label}-${randomUUID()}@example.com`;
     emails.push(email);
-    const user = await db.orm.public.User.create({ name: label, email, password: "x" });
+    const user = await db.orm.public.User.create({ name: label, email, password: "x", role: "TEACHER" });
     return { id: user.id, token: (await createSession(user.id)).token };
   }
   async function makeVideo(uploaderId: number, title: string) {

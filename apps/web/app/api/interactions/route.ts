@@ -19,5 +19,5 @@ export async function GET(request: Request) {
       ...(videoId !== null && { videoId: parseId(videoId, "Video") }),
     });
     return json({ groups });
-  });
+  }, { role: "TEACHER" });
 }

@@ -9,6 +9,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/videos/[id]
       const videoId = parseId((await ctx.params).id, "Video");
       return json({ interaction: await createInteraction(user.id, videoId, await readJson(request)) }, 201);
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }

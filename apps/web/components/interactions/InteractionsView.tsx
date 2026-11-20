@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration, pluralize } from "@/components/videos/format";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { formatPreciseTimestamp, type InteractionType } from "@/lib/interactions/model";
 import { listInteractionsByVideo } from "@/lib/interactions/service";
 import { listVideos } from "@/lib/videos/service";
@@ -34,7 +34,7 @@ export function InteractionsPage({ type, searchParams }: { type: InteractionType
 }
 
 async function InteractionsView({ type, searchParams }: { type: InteractionType; searchParams: SearchParams }) {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const sp = await searchParams;
   const q = (Array.isArray(sp.q) ? sp.q[0] : sp.q)?.slice(0, 200) ?? "";
   const rawVideo = Array.isArray(sp.video) ? sp.video[0] : sp.video;

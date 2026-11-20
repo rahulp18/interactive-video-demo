@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'51937ca0771907531560fa3c0bb9151b1581de27230b563a0be854de495677bc'>;
+  StorageHashBase<'eb150eb2888477c1b3fd9720dd42516664f3e86f581952e84aef3f497de256a5'>;
 export type ExecutionHash =
   ExecutionHashBase<'3f263b1c4fa43d188e61bdb02b6c0947a08555179ce28063aac5cae7e766e666'>;
 export type ProfileHash =
@@ -285,6 +285,12 @@ type FieldTypeOverrides = {
         };
         readonly type: { readonly output: 'SURVEY' | 'QUIZ'; readonly input: 'SURVEY' | 'QUIZ' };
       };
+      readonly User: {
+        readonly role: {
+          readonly output: 'STUDENT' | 'TEACHER';
+          readonly input: 'STUDENT' | 'TEACHER';
+        };
+      };
     };
   };
 };
@@ -312,6 +318,12 @@ type ColumnTypeOverrides = {
         readonly input: 'CHOICE' | 'TEXT';
       };
       readonly type: { readonly output: 'SURVEY' | 'QUIZ'; readonly input: 'SURVEY' | 'QUIZ' };
+    };
+    readonly User: {
+      readonly role: {
+        readonly output: 'STUDENT' | 'TEACHER';
+        readonly input: 'STUDENT' | 'TEACHER';
+      };
     };
   };
 };
@@ -388,6 +400,7 @@ export namespace Models {
     id: FieldOutputTypes['public']['User']['id'];
     name: FieldOutputTypes['public']['User']['name'];
     password: FieldOutputTypes['public']['User']['password'];
+    role: FieldOutputTypes['public']['User']['role'];
     updatedAt: FieldOutputTypes['public']['User']['updatedAt'];
     responses: public_InteractionResponse[];
     sessions: public_Session[];
@@ -876,6 +889,16 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly role: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'STUDENT'>;
+                  };
+                  readonly many: false;
+                };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -1017,6 +1040,10 @@ type ContractBase = Omit<
             readonly InteractionType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['SURVEY', 'QUIZ'];
+            };
+            readonly UserRole: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['STUDENT', 'TEACHER'];
             };
           };
         };
@@ -1400,6 +1427,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly role: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -1453,6 +1484,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
                 readonly password: { readonly column: 'password' };
+                readonly role: { readonly column: 'role' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
@@ -1578,6 +1610,13 @@ type ContractBase = Omit<
               { readonly name: 'QUIZ'; readonly value: 'QUIZ' },
             ];
           };
+          readonly UserRole: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'STUDENT'; readonly value: 'STUDENT' },
+              { readonly name: 'TEACHER'; readonly value: 'TEACHER' },
+            ];
+          };
         };
         readonly enumMemberTypes?: {
           readonly AnswerType: readonly [
@@ -1587,6 +1626,10 @@ type ContractBase = Omit<
           readonly InteractionType: readonly [
             { readonly name: 'SURVEY'; readonly value: 'SURVEY' },
             { readonly name: 'QUIZ'; readonly value: 'QUIZ' },
+          ];
+          readonly UserRole: readonly [
+            { readonly name: 'STUDENT'; readonly value: 'STUDENT' },
+            { readonly name: 'TEACHER'; readonly value: 'TEACHER' },
           ];
         };
       };

@@ -33,10 +33,10 @@ describe("responses, results and library", () => {
   const users: Record<string, { id: number; token: string; name: string }> = {};
   let videoId = 0, shareId = "", quizId = 0, surveyId = 0, optA = 0, optB = 0, sOpt1 = 0, sOpt2 = 0;
 
-  async function makeUser(key: string, name: string) {
+  async function makeUser(key: string, name: string, role: "STUDENT" | "TEACHER" = "STUDENT") {
     const email = `${key}-${randomUUID()}@example.com`;
     emails.push(email);
-    const u = await db.orm.public.User.create({ name, email, password: "secret-hash" });
+    const u = await db.orm.public.User.create({ name, email, password: "secret-hash", role });
     users[key] = { id: u.id, token: (await createSession(u.id)).token, name };
   }
   const authed = (method: string, path: string, key: string, body?: unknown) =>
@@ -56,10 +56,10 @@ describe("responses, results and library", () => {
     );
 
   beforeAll(async () => {
-    await makeUser("owner", "Olivia Owner");
+    await makeUser("owner", "Olivia Owner", "TEACHER");
     await makeUser("ann", '=HYPERLINK("x")');
     await makeUser("bob", "Bob Viewer");
-    await makeUser("zed", "Zed Stranger");
+    await makeUser("zed", "Zed Stranger", "TEACHER");
     const key = `key-${randomUUID()}`;
     const v = await db.orm.public.Video.create({
       title: "Results Demo", fileUrl: `https://example.ufs.sh/f/${key}`, duration: 60, mimeType: "video/mp4",
@@ -136,7 +136,8 @@ describe("responses, results and library", () => {
 
   it("results are owner-only (API and service)", async () => {
     const p = params({ id: String(videoId) });
-    expect((await responsesRoute(authed("GET", "/x", "bob"), p)).status).toBe(404);
+    expect((await responsesRoute(authed("GET", "/x", "zed"), p)).status).toBe(404); // another teacher: not the owner
+    expect((await responsesRoute(authed("GET", "/x", "bob"), p)).status).toBe(403); // a student: no teacher access at all
     expect((await responsesRoute(new Request(ORIGIN + "/x"), p)).status).toBe(401);
     await expect(getResponseSummary(users.bob.id, videoId)).rejects.toMatchObject({ code: "NOT_FOUND" });
     expect((await getResponseOverview(users.bob.id)).find((v) => v.id === videoId)).toBeUndefined();
@@ -160,7 +161,8 @@ describe("responses, results and library", () => {
   it("Library lists only listed, shared videos; unsharing removes them", async () => {
     expect((await listLibrary()).some((v) => v.shareId === shareId)).toBe(false);
     const p = params({ id: String(videoId) });
-    expect((await listingRoute(authed("PUT", "/x", "bob", { listed: true }), p)).status).toBe(404);
+    expect((await listingRoute(authed("PUT", "/x", "zed", { listed: true }), p)).status).toBe(404);
+    expect((await listingRoute(authed("PUT", "/x", "bob", { listed: true }), p)).status).toBe(403);
     expect((await listingRoute(authed("PUT", "/x", "owner", { listed: "yes" }), p)).status).toBe(400);
     expect((await listingRoute(authed("PUT", "/x", "owner", { listed: true }), p)).status).toBe(200);
     const item = (await listLibrary()).find((v) => v.shareId === shareId)!;

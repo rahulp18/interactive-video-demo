@@ -58,6 +58,19 @@
                 "value": "QUIZ"
               }
             ]
+          },
+          "UserRole": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "STUDENT",
+                "value": "STUDENT"
+              },
+              {
+                "name": "TEACHER",
+                "value": "TEACHER"
+              }
+            ]
           }
         },
         "models": {
@@ -627,6 +640,19 @@
                   "kind": "scalar"
                 }
               },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "UserRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -701,6 +727,9 @@
                 },
                 "password": {
                   "column": "password"
+                },
+                "role": {
+                  "column": "role"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -1441,6 +1470,13 @@
               ]
             },
             "User": {
+              "checks": [
+                {
+                  "expression": "\"role\" IN ('STUDENT', 'TEACHER')",
+                  "name": "User_role_check_b921956f",
+                  "prefix": "User_role_check"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
@@ -1473,6 +1509,21 @@
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "STUDENT"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "UserRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-date@1",
@@ -1656,6 +1707,13 @@
                 "SURVEY",
                 "QUIZ"
               ]
+            },
+            "UserRole": {
+              "kind": "valueSet",
+              "values": [
+                "STUDENT",
+                "TEACHER"
+              ]
             }
           }
         },
@@ -1663,7 +1721,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "51937ca0771907531560fa3c0bb9151b1581de27230b563a0be854de495677bc"
+    "storageHash": "eb150eb2888477c1b3fd9720dd42516664f3e86f581952e84aef3f497de256a5"
   },
   "execution": {
     "executionHash": "3f263b1c4fa43d188e61bdb02b6c0947a08555179ce28063aac5cae7e766e666",

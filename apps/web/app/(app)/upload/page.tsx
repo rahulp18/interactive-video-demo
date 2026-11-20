@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UploadPanel } from "@/components/videos/UploadPanel";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Upload Video" };
 
@@ -29,6 +29,6 @@ export default function UploadPage() {
 
 // The uploader depends on the signed-in user (UploadThing authorizes against the same session), so it renders per request.
 async function UploadForm() {
-  await requireCurrentUser();
+  await requireTeacher();
   return <UploadPanel />;
 }

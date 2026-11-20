@@ -6,7 +6,7 @@ import { AppFrame } from "./AppFrame";
 /** Reads the session on the server and redirects to /login when it is missing, expired or revoked. */
 export async function AppShell({ children }: { children: ReactNode }) {
   const user = await requireCurrentUser();
-  return <AppFrame user={{ name: user.name, email: user.email }}>{children}</AppFrame>;
+  return <AppFrame user={{ name: user.name, email: user.email, role: user.role }}>{children}</AppFrame>;
 }
 
 export function ShellSkeleton() {

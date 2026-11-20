@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { VideoThumb } from "@/components/videos/VideoThumb";
 import { formatDate, formatDuration, pluralize } from "@/components/videos/format";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { getResponseOverview } from "@/lib/responses/service";
 import { getDashboardStats } from "@/lib/videos/service";
 
@@ -34,7 +34,7 @@ export default function DashboardPage() {
 }
 
 async function DashboardContent() {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const [stats, overview] = await Promise.all([getDashboardStats(user.id), getResponseOverview(user.id)]);
   const responseCount = overview.reduce((n, v) => n + v.responseCount, 0);
 

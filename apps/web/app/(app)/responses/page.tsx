@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration, pluralize } from "@/components/videos/format";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { getResponseOverview } from "@/lib/responses/service";
 
 export const metadata: Metadata = { title: "Responses" };
@@ -25,7 +25,7 @@ export default function ResponsesPage() {
 }
 
 async function Overview() {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const items = (await getResponseOverview(user.id)).filter((v) => v.interactionCount > 0);
   if (items.length === 0) {
     return (

@@ -2,7 +2,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError, UTApi } from "uploadthing/server";
 import { AuthError } from "@/lib/auth/errors";
 import { assertSameOrigin } from "@/lib/auth/http";
-import { requireUser } from "@/lib/auth/request";
+import { requireRole } from "@/lib/auth/request";
 import {
   isAllowedVideoType,
   VIDEO_MAX_FILE_SIZE,
@@ -22,7 +22,7 @@ export const ourFileRouter = {
       let user;
       try {
         assertSameOrigin(req);
-        user = (await requireUser(req)).user;
+        user = (await requireRole(req, "TEACHER")).user;
       } catch (error) {
         if (error instanceof AuthError) {
           throw new UploadThingError({

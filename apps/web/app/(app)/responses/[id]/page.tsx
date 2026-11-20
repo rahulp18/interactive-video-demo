@@ -9,7 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthError } from "@/lib/auth/errors";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { formatPreciseTimestamp } from "@/lib/interactions/model";
 import { getResponseSummary, type InteractionStat, type Respondent } from "@/lib/responses/service";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,7 @@ const percent = (n: number, total: number) => (total > 0 ? Math.round((n / total
 const when = (iso: string) => new Date(iso).toLocaleString("en", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) + " UTC";
 
 async function Results({ params }: Pick<PageProps<"/responses/[id]">, "params">) {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const raw = (await params).id;
   const id = /^\d{1,10}$/.test(raw) ? Number(raw) : NaN;
   if (!Number.isSafeInteger(id) || id <= 0 || id > 2_147_483_647) notFound();

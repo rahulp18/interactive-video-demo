@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteVideoButton } from "@/components/videos/DeleteVideoButton";
 import { VideoThumb } from "@/components/videos/VideoThumb";
 import { formatDate, formatDuration, pluralize } from "@/components/videos/format";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { listVideos } from "@/lib/videos/service";
 
 export const metadata: Metadata = { title: "My Videos" };
@@ -35,7 +35,7 @@ export default function VideosPage() {
 }
 
 async function VideoGrid() {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const videos = await listVideos(user.id);
 
   if (videos.length === 0) {

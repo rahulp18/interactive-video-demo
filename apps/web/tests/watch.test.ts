@@ -23,7 +23,7 @@ describe("public sharing and answers", () => {
   async function makeUser(label: string) {
     const email = `${label}-${randomUUID()}@example.com`;
     emails.push(email);
-    const u = await db.orm.public.User.create({ name: label, email, password: "x" });
+    const u = await db.orm.public.User.create({ name: label, email, password: "x", role: "TEACHER" });
     return { id: u.id, token: (await createSession(u.id)).token };
   }
   const authed = (method: string, path: string, token: string) =>

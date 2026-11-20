@@ -12,6 +12,6 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/videos/[id]/
       if (typeof body?.listed !== "boolean") throw new AuthError("VALIDATION_ERROR", "Invalid request.", { listed: "Must be true or false." });
       return json(await setListed(user.id, parseId((await ctx.params).id, "Video"), body.listed));
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }

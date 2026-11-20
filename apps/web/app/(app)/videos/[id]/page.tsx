@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { VideoEditor } from "@/components/editor/VideoEditor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthError } from "@/lib/auth/errors";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { isInteractionType } from "@/lib/interactions/model";
 import { listVideoInteractions } from "@/lib/interactions/service";
 import { getVideo } from "@/lib/videos/service";
@@ -24,7 +24,7 @@ export default function VideoEditorPage({ params, searchParams }: Props) {
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 async function Editor({ params, searchParams }: Pick<Props, "params" | "searchParams">) {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const { id: rawId } = await params;
   const query = await searchParams;
 

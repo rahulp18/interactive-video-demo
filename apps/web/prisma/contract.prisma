@@ -13,10 +13,18 @@ enum AnswerType {
   TEXT   = "TEXT"
 }
 
+// Which experience a user gets. Public registration only ever creates STUDENT; TEACHER is granted out of band.
+enum UserRole {
+  @@type("pg/text@1")
+  STUDENT = "STUDENT"
+  TEACHER = "TEACHER"
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
+  role      UserRole @default(STUDENT)
   // Stores a password hash only, never plaintext. Hashing is the application's job.
   password  String
   responses InteractionResponse[]

@@ -7,7 +7,7 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/videos/[id]/
   return handle(
     request,
     async (user) => json({ shareId: await enableSharing(user.id, parseId((await ctx.params).id, "Video")) }),
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }
 
@@ -18,6 +18,6 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/videos/[i
       await disableSharing(user.id, parseId((await ctx.params).id, "Video"));
       return json({ ok: true });
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }

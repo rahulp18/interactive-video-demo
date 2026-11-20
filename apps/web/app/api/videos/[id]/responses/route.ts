@@ -14,5 +14,5 @@ export async function GET(request: Request, ctx: RouteContext<"/api/videos/[id]/
         "Cache-Control": "no-store",
       },
     });
-  });
+  }, { role: "TEACHER" });
 }
