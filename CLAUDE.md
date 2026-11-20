@@ -1,6 +1,6 @@
 # interactive-video-demo
 
-Interactive video platform: videos with timed interactions (SURVEY / QUIZ questions that appear at a timestamp). Web app + mobile app share one Postgres backend and one shared TS package.
+PARICHAY: a values-education platform built on interactive story videos (timed SURVEY / QUIZ questions whose options are weighted for 10 virtues). Students watch story modules; teachers author modules, follow students and add a teacher rating (scope = the SRS). Web app + mobile app share one Postgres backend and one shared TS package.
 
 ## Layout (pnpm + Turborepo monorepo)
 - `apps/web` — Next.js 16 (App Router, React 19.3, Tailwind 4, Turbopack). Also hosts the backend: Prisma DB access in `apps/web/prisma/`.

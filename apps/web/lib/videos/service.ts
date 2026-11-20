@@ -111,31 +111,3 @@ export async function deleteVideo(userId: number, videoId: number): Promise<void
     console.error("Stored file cleanup failed:", video.fileKey);
   });
 }
-
-export type DashboardStats = {
-  videoCount: number;
-  surveyCount: number;
-  quizCount: number;
-  recent: VideoListItem[];
-};
-
-export async function getDashboardStats(userId: number, recentLimit = 5): Promise<DashboardStats> {
-  const rows = await db.orm.public.Video.where({ uploaderId: userId })
-    .orderBy([(v) => v.createdAt.desc(), (v) => v.id.desc()])
-    .include("interactions", (i) => i.select("type"))
-    .all();
-  let surveyCount = 0;
-  let quizCount = 0;
-  for (const v of rows) {
-    for (const i of v.interactions) {
-      if (i.type === "SURVEY") surveyCount++;
-      else quizCount++;
-    }
-  }
-  return {
-    videoCount: rows.length,
-    surveyCount,
-    quizCount,
-    recent: rows.slice(0, recentLimit).map((v) => ({ ...toRecord(v), interactionCount: v.interactions.length })),
-  };
-}

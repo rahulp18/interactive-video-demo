@@ -13,17 +13,80 @@ enum AnswerType {
   TEXT   = "TEXT"
 }
 
+// Which experience a user gets. Public registration only ever creates STUDENT; TEACHER is granted out of band.
+enum UserRole {
+  @@type("pg/text@1")
+  STUDENT = "STUDENT"
+  TEACHER = "TEACHER"
+}
+
+// Display-only hint for how the player draws a question. Every style is still answerType CHOICE (RATING = 5 ordered options drawn as a slider).
+enum PresentationStyle {
+  @@type("pg/text@1")
+  MORAL_CHOICE = "MORAL_CHOICE"
+  SITUATIONAL  = "SITUATIONAL"
+  EMOTION      = "EMOTION"
+  PREDICT      = "PREDICT"
+  RATING       = "RATING"
+}
+
+enum ModuleStatus {
+  @@type("pg/text@1")
+  DRAFT     = "DRAFT"
+  PUBLISHED = "PUBLISHED"
+}
+
+enum AgeBand {
+  @@type("pg/text@1")
+  AGE_8_9   = "8-9"
+  AGE_10_12 = "10-12"
+}
+
+// Parents and teachers have no accounts, so a rater is a kind plus a free-text name, never a User.
+enum RaterKind {
+  @@type("pg/text@1")
+  PARENT  = "PARENT"
+  TEACHER = "TEACHER"
+}
+
+enum RatingMark {
+  @@type("pg/text@1")
+  NONE     = "NONE"
+  STRENGTH = "STRENGTH"
+  IMPROVE  = "IMPROVE"
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
+  role      UserRole @default(STUDENT)
   // Stores a password hash only, never plaintext. Hashing is the application's job.
   password  String
+  // Student sign-in without email (FR-4.4): lowercase username + 4-digit PIN. Set server-side only (setStudentCredentials).
+  username  String?  @unique
+  // Same hash format as `password`. Only students may have one, and only together with a username.
+  pinHash   String?
+  // Lockout lives in the database (not in memory) because every serverless request may hit a different instance.
+  pinFailedAttempts Int @default(0)
+  pinLockedUntil    DateTime?
+  // Preset avatar key (e.g. "fox"); the picture itself lives in code (lib/student/avatars.ts). Never a URL or upload.
+  avatar    String?
   responses InteractionResponse[]
   sessions  Session[]
   videos    Video[]
+  moduleProgress ModuleProgress[]
+  ratings   VirtueRating[]
+  auditActed   AuditLog[] @relation("AuditActor")
+  auditAbout   AuditLog[] @relation("AuditSubject")
   createdAt temporal.CreatedAt
   updatedAt temporal.UpdatedAt
+
+  @@check(expression: sql`"username" IS NULL OR "username" ~ '^[a-z0-9_]{3,20}$'`, name: "user_username_format")
+  @@check(expression: sql`"pinHash" IS NULL OR "role" = 'STUDENT'`, name: "user_pin_students_only")
+  @@check(expression: sql`"pinHash" IS NULL OR "username" IS NOT NULL`, name: "user_pin_needs_username")
+  @@check(expression: sql`"pinFailedAttempts" >= 0`, name: "user_pin_attempts_nonneg")
+  @@check(expression: sql`"avatar" IS NULL OR "avatar" ~ '^[a-z]{3,20}$'`, name: "user_avatar_format")
 }
 
 // One row per issued web cookie or mobile bearer token. Only the SHA-256 of the token is stored.
@@ -33,11 +96,20 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   tokenHash String   @unique
   expiresAt DateTime
+  // Parental gate (a grown-up check in front of /student/parent). Kept on the session, not in a cookie, so it cannot be
+  // forged and ends with the session at logout. A gate against children wandering in, NOT access control.
+  parentGateUntil        DateTime?
+  parentGateFailures     Int       @default(0)
+  parentGateLockedUntil  DateTime?
+  // The pending grown-up question. The answer never leaves the server; the browser gets only the question text.
+  parentGateChallenge    String?
+  parentGateAnswer       Int?
   createdAt temporal.CreatedAt
   updatedAt temporal.UpdatedAt
 
   @@index([userId])
   @@index([expiresAt])
+  @@check(expression: sql`"parentGateFailures" >= 0`, name: "session_gate_failures_nonneg")
 }
 
 model Video {
@@ -59,6 +131,8 @@ model Video {
   uploaderId   Int
   uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: NoAction)
   interactions Interaction[]
+  // Present only for videos that are PARICHAY story modules; plain videos have none.
+  module       Module?
   createdAt    temporal.CreatedAt
   updatedAt    temporal.UpdatedAt
 
@@ -76,6 +150,8 @@ model Interaction {
   type        InteractionType
   question    String
   answerType  AnswerType      @default(CHOICE)
+  // Display only; see PresentationStyle. Existing interactions are unaffected by the default.
+  presentationStyle PresentationStyle @default(MORAL_CHOICE)
   // TEXT quizzes only: the expected answer (compared case- and whitespace-insensitively)
   correctAnswer String?
   isSkippable Boolean         @default(false)
@@ -100,6 +176,7 @@ model InteractionOption {
   isCorrect     Boolean     @default(false)
   position      Int         @default(0)
   responses     InteractionResponse[]
+  virtueWeights OptionVirtueWeight[]
 
   // Target of the composite foreign key on InteractionResponse
   @@unique([id, interactionId])
@@ -120,12 +197,184 @@ model InteractionResponse {
   // Set for TEXT interactions instead of selectedOptionId
   textAnswer       String?
   isSkipped        Boolean     @default(false)
+  // Milliseconds from the question appearing to the answer. Null = not captured.
+  responseTimeMs   Int?
+  // Times the viewer replayed the video segment before answering
+  replayCount      Int         @default(0)
+  // 1 for the first answer; incremented each time the viewer re-answers (the row still holds only the latest answer)
+  attemptCount     Int         @default(1)
+  // Client idempotency key of the last save. A retry with the same key is a no-op (no second attempt is counted).
+  lastRequestId    String?
   createdAt        temporal.CreatedAt
   updatedAt        temporal.UpdatedAt
 
   @@unique([userId, interactionId])
+  @@check(expression: sql`"responseTimeMs" IS NULL OR "responseTimeMs" >= 0`, name: "response_time_nonneg")
+  @@check(expression: sql`"replayCount" >= 0`, name: "response_replays_nonneg")
+  @@check(expression: sql`"attemptCount" >= 1`, name: "response_attempt_positive")
   @@index([interactionId])
   @@index([selectedOptionId])
   @@check(expression: sql`"isSkipped" = ("selectedOptionId" IS NULL AND "textAnswer" IS NULL)`, name: "response_skipped_matches_answer")
   @@check(expression: sql`NOT ("selectedOptionId" IS NOT NULL AND "textAnswer" IS NOT NULL)`, name: "response_single_answer_kind")
+}
+
+// ---------------------------------------------------------------- PARICHAY: virtues, modules, journeys, scoring
+
+// The 10 core virtues. Reference data inserted by migration, in a fixed display order.
+model Virtue {
+  id        Int    @id @default(autoincrement())
+  slug      String @unique
+  name      String
+  essence   String
+  // Display order, 1..10
+  position  Int    @unique
+  primaryModules    Module[]
+  secondaryModules  ModuleSecondaryVirtue[]
+  journeys          Journey[]
+  optionWeights     OptionVirtueWeight[]
+  ratings           VirtueRating[]
+
+  @@check(expression: sql`"position" BETWEEN 1 AND 10`, name: "virtue_position_range")
+}
+
+// SRS metadata on top of a Video (1:1). A video without a Module behaves exactly as before.
+model Module {
+  id                Int          @id @default(autoincrement())
+  videoId           Int          @unique
+  video             Video        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  sourceStory       String
+  primaryVirtueId   Int
+  primaryVirtue     Virtue       @relation(fields: [primaryVirtueId], references: [id], onDelete: NoAction)
+  ageBand           AgeBand
+  learningObjective String
+  // Questions for parents/teachers to discuss afterwards
+  discussionPrompts String[]
+  followUpActivity  String
+  version           Int          @default(1)
+  status            ModuleStatus @default(DRAFT)
+  secondaryVirtues  ModuleSecondaryVirtue[]
+  journeyModules    JourneyModule[]
+  progress          ModuleProgress[]
+  createdAt         temporal.CreatedAt
+  updatedAt         temporal.UpdatedAt
+
+  @@index([primaryVirtueId])
+  // Target of the composite FK that stops a secondary virtue equalling the primary one
+  @@unique([id, primaryVirtueId])
+  @@check(expression: sql`"version" >= 1`, name: "module_version_positive")
+}
+
+// At most 2 secondary virtues per module (position 1 or 2, unique per module), never the primary.
+// primaryVirtueId mirrors Module.primaryVirtueId through a cascading composite FK, so a CHECK can compare the two.
+model ModuleSecondaryVirtue {
+  id              Int    @id @default(autoincrement())
+  moduleId        Int
+  virtueId        Int
+  virtue          Virtue @relation(fields: [virtueId], references: [id], onDelete: NoAction)
+  primaryVirtueId Int
+  module          Module @relation(fields: [moduleId, primaryVirtueId], references: [id, primaryVirtueId], onDelete: Cascade, onUpdate: Cascade)
+  position        Int
+
+  @@unique([moduleId, position])
+  @@unique([moduleId, virtueId])
+  @@index([virtueId])
+  @@check(expression: sql`"position" IN (1, 2)`, name: "module_secondary_position")
+  @@check(expression: sql`"virtueId" <> "primaryVirtueId"`, name: "module_secondary_not_primary")
+}
+
+model Journey {
+  id             Int     @id @default(autoincrement())
+  title          String
+  description    String
+  focusVirtueId  Int?
+  focusVirtue    Virtue? @relation(fields: [focusVirtueId], references: [id], onDelete: NoAction)
+  displayOrder   Int     @default(0)
+  modules        JourneyModule[]
+  createdAt      temporal.CreatedAt
+  updatedAt      temporal.UpdatedAt
+
+  @@index([focusVirtueId])
+}
+
+// Levels unlock in sequence (app logic, Phase 5); modules in a level are ordered by position.
+model JourneyModule {
+  id        Int     @id @default(autoincrement())
+  journeyId Int
+  journey   Journey @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  moduleId  Int
+  module    Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  level     Int
+  position  Int     @default(0)
+
+  @@unique([journeyId, moduleId])
+  @@unique([journeyId, level, position])
+  @@index([moduleId])
+  @@check(expression: sql`"level" >= 1`, name: "journey_module_level_positive")
+  @@check(expression: sql`"position" >= 0`, name: "journey_module_position_nonneg")
+}
+
+// How an answer option scores one virtue: -2 (harmful) .. +2 (exemplary). Never 0: no row means no weight.
+model OptionVirtueWeight {
+  id       Int               @id @default(autoincrement())
+  optionId Int
+  option   InteractionOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  virtueId Int
+  virtue   Virtue            @relation(fields: [virtueId], references: [id], onDelete: NoAction)
+  weight   Int
+
+  @@unique([optionId, virtueId])
+  @@index([virtueId])
+  @@check(expression: sql`"weight" BETWEEN -2 AND 2 AND "weight" <> 0`, name: "option_weight_range")
+}
+
+model ModuleProgress {
+  id                  Int       @id @default(autoincrement())
+  userId              Int
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId            Int
+  module              Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  startedAt           DateTime  @default(now())
+  lastPositionSeconds Float     @default(0)
+  // Set once the module counts toward scores; seeds may backdate it to build trends.
+  completedAt         DateTime?
+  updatedAt           temporal.UpdatedAt
+
+  @@unique([userId, moduleId])
+  @@index([moduleId])
+  @@check(expression: sql`"lastPositionSeconds" >= 0`, name: "progress_position_nonneg")
+}
+
+// A parent's or teacher's 1-5 view of one virtue for a student. The rater has no account, so no user FK.
+model VirtueRating {
+  id        Int        @id @default(autoincrement())
+  studentId Int
+  student   User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  raterKind RaterKind
+  raterName String
+  virtueId  Int
+  virtue    Virtue     @relation(fields: [virtueId], references: [id], onDelete: NoAction)
+  rating    Int
+  mark      RatingMark @default(NONE)
+  notes     String?
+  ratedAt   DateTime   @default(now())
+
+  @@index([studentId, raterKind])
+  @@index([virtueId])
+  @@check(expression: sql`"rating" BETWEEN 1 AND 5`, name: "virtue_rating_range")
+}
+
+
+// Who looked at a child's report, and when (FR-7.14 / NFR-9.10). Deliberately NO IP address or user agent (data minimisation).
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int
+  actor     User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
+  subjectId Int
+  subject   User     @relation("AuditSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  // REPORT_VIEW | REPORT_PRINT
+  action    String
+  at        DateTime @default(now())
+
+  @@index([subjectId, at])
+  @@check(expression: sql`"action" IN ('REPORT_VIEW', 'REPORT_PRINT')`, name: "audit_action_known")
 }

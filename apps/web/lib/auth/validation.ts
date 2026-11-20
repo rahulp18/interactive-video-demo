@@ -2,6 +2,10 @@ import { AuthError } from "./errors";
 
 export type RegisterInput = { name: string; email: string; password: string };
 export type LoginInput = { email: string; password: string };
+export type PinLoginInput = { username: string; pin: string };
+
+export const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
+export const PIN_PATTERN = /^\d{4}$/;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PASSWORD_MIN = 8;
@@ -55,4 +59,19 @@ export function parseLoginInput(body: unknown): LoginInput {
   if (!password || password.length > PASSWORD_MAX) fields.password = "Password is required.";
   if (Object.keys(fields).length > 0) fail(fields);
   return { email, password };
+}
+
+export const normalizeUsername = (username: string) => username.trim().toLowerCase();
+
+// Like login, a malformed username/PIN is not a field error here: the service treats it as a failed sign-in with the
+// same generic message, so nothing tells a guesser which part was wrong. Only missing/oversized values are rejected.
+export function parsePinLoginInput(body: unknown): PinLoginInput {
+  const raw = asRecord(body);
+  const fields: Record<string, string> = {};
+  const username = typeof raw.username === "string" ? normalizeUsername(raw.username) : "";
+  const pin = typeof raw.pin === "string" ? raw.pin : "";
+  if (!username || username.length > 64) fields.username = "Type your username.";
+  if (!pin || pin.length > 16) fields.pin = "Type your PIN.";
+  if (Object.keys(fields).length > 0) fail(fields);
+  return { username, pin };
 }

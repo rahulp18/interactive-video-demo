@@ -8,7 +8,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/videos/[id]"
     const id = parseId((await ctx.params).id, "Video");
     const video = await getVideo(user.id, id);
     return json({ video, interactions: await listVideoInteractions(user.id, id) });
-  });
+  }, { role: "TEACHER" });
 }
 
 export async function PATCH(request: Request, ctx: RouteContext<"/api/videos/[id]">) {
@@ -18,7 +18,7 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/videos/[id
       const id = parseId((await ctx.params).id, "Video");
       return json({ video: await updateVideoTitle(user.id, id, await readJson(request)) });
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }
 
@@ -29,6 +29,6 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/videos/[i
       await deleteVideo(user.id, parseId((await ctx.params).id, "Video"));
       return json({ ok: true });
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }

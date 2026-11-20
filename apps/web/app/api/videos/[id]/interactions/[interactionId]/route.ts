@@ -14,7 +14,7 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/videos/[id]/
       const { videoId, interactionId } = await ids(ctx);
       return json({ interaction: await updateInteraction(user.id, videoId, interactionId, await readJson(request)) });
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }
 
@@ -26,6 +26,6 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/videos/[i
       await deleteInteraction(user.id, videoId, interactionId);
       return json({ ok: true });
     },
-    { mutating: true },
+    { mutating: true, role: "TEACHER" },
   );
 }

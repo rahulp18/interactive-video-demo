@@ -58,12 +58,28 @@ afterAll(async () => {
   await db.close();
 });
 
+// The route is closed unless this opt-in is set; the tests below exercise the open path.
+vi.stubEnv("ALLOW_PUBLIC_REGISTRATION", "true");
+
 describe("register", () => {
+  it("is closed by default: students are created by teachers, not by public sign-up", async () => {
+    vi.stubEnv("ALLOW_PUBLIC_REGISTRATION", "");
+    try {
+      const email = uniqueEmail();
+      const res = await register(post("/api/auth/register", { name: "Nope", email, password: PASSWORD }));
+      expect(res.status).toBe(403);
+      expect((await res.json()).error.code).toBe("REGISTRATION_CLOSED");
+      expect(await db.orm.public.User.where({ email }).first()).toBeNull();
+    } finally {
+      vi.stubEnv("ALLOW_PUBLIC_REGISTRATION", "true");
+    }
+  });
+
   it("creates a user and never returns the password or its hash", async () => {
     const { email, res } = await makeUser({ name: "  Ada   Lovelace " });
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body.user).toEqual({ id: expect.any(Number), name: "Ada Lovelace", email });
+    expect(body.user).toEqual({ id: expect.any(Number), name: "Ada Lovelace", email, role: "STUDENT" });
     expect(JSON.stringify(body)).not.toMatch(/password|scrypt/i);
 
     const row = await db.orm.public.User.where({ email }).first();
@@ -138,6 +154,15 @@ describe("register", () => {
     expect(res.status).toBe(201);
     const row = await db.orm.public.User.where({ email }).first();
     expect(row?.id).not.toBe(999999);
+  });
+
+  it("always registers a STUDENT, whatever role the request asks for", async () => {
+    for (const role of ["TEACHER", "teacher", "ADMIN", { x: 1 }]) {
+      const { email, res } = await makeUser({ role });
+      expect(res.status).toBe(201);
+      expect((await res.json()).user.role).toBe("STUDENT");
+      expect((await db.orm.public.User.where({ email }).first())?.role).toBe("STUDENT");
+    }
   });
 
   it("rejects cross-origin browser requests", async () => {
@@ -228,14 +253,14 @@ describe("current user", () => {
     expect((await res.json()).error.code).toBe("UNAUTHENTICATED");
   });
 
-  it("returns only id, name and email for a cookie session", async () => {
+  it("returns only id, name, email and role for a cookie session", async () => {
     const { email } = await makeUser();
     const token = cookieValue(await webLogin(email));
     const res = await me(get("/api/auth/me", { cookie: `${SESSION_COOKIE_NAME}=${token}` }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Object.keys(body)).toEqual(["user"]);
-    expect(Object.keys(body.user).sort()).toEqual(["email", "id", "name"]);
+    expect(Object.keys(body.user).sort()).toEqual(["email", "id", "name", "role"]);
     expect(JSON.stringify(body)).not.toMatch(/password|scrypt|tokenHash|expiresAt/i);
   });
 

@@ -118,9 +118,6 @@ export function InteractionOverlay({ shareId, interaction, signedIn, returnTo, o
                   Skip
                 </Button>
               )}
-              <Link href={withNext("/register", returnTo)} className={buttonVariants({ variant: "outline", size: "lg" })}>
-                Create account
-              </Link>
               <Link href={withNext("/login", returnTo)} className={buttonVariants({ size: "lg" })} autoFocus>
                 Sign in
               </Link>

@@ -2,6 +2,8 @@
 
 import {
   ArrowLeftIcon,
+  ArrowRightIcon,
+  BookOpenIcon,
   ClipboardListIcon,
   CircleHelpIcon,
   LoaderCircleIcon,
@@ -17,12 +19,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DeleteVideoButton } from "@/components/videos/DeleteVideoButton";
-import { formatPreciseTimestamp, roundTimestamp, sortInteractions, type InteractionDTO, type InteractionType } from "@/lib/interactions/model";
+import {
+  formatPreciseTimestamp,
+  roundTimestamp,
+  sortInteractions,
+  type EditorModule,
+  type InteractionDTO,
+  type InteractionType,
+} from "@/lib/interactions/model";
+import { virtueDisplay, virtueTint } from "@/lib/virtues/display";
+import { cn } from "@/lib/utils";
 import { VIDEO_TITLE_MAX } from "@/lib/videos/policy";
 import { videosApi } from "@/lib/videos/client";
 import { draftFrom, emptyDraft, InteractionForm } from "./InteractionForm";
 import { InteractionList } from "./InteractionList";
-import { SharePanel } from "./SharePanel";
 import { Timeline } from "./Timeline";
 
 type Selection =
@@ -30,11 +40,13 @@ type Selection =
   | { kind: "existing"; id: number }
   | { kind: "new"; type: InteractionType; timestamp: number; nonce: number };
 
-export type EditorVideo = { id: number; title: string; fileUrl: string; duration: number; shareId: string | null; isListed: boolean };
+export type EditorVideo = { id: number; title: string; fileUrl: string; duration: number };
 
 type Props = {
   video: EditorVideo;
   initialInteractions: InteractionDTO[];
+  /** The PARICHAY story module behind this video, or null for a plain video. */
+  storyModule: EditorModule | null;
   /** Deep-link state from the URL: edit an interaction, start a new one, or focus the title field. */
   initial: { editId?: number; newType?: InteractionType; time?: number; focusTitle?: boolean };
 };
@@ -56,7 +68,8 @@ function initialSelection(props: Props): Selection {
 }
 
 export function VideoEditor(props: Props) {
-  const { video, initialInteractions, initial } = props;
+  const { video, initialInteractions, initial, storyModule } = props;
+  const moduleVirtueIds = storyModule?.virtues.map((v) => v.id);
   const videoRef = useRef<HTMLVideoElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const dirtyRef = useRef(false);
@@ -115,6 +128,7 @@ export function VideoEditor(props: Props) {
   }
 
   function select(id: number) {
+    if (!storyModule) return;
     if (selection.kind === "existing" && selection.id === id) return;
     if (!confirmDiscard()) return;
     dirtyRef.current = false;
@@ -196,8 +210,11 @@ export function VideoEditor(props: Props) {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Link href="/videos" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeftIcon className="size-4" aria-hidden /> My Videos
+        <Link
+          href={storyModule ? `/modules/${storyModule.moduleId}` : "/modules"}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeftIcon className="size-4" aria-hidden /> {storyModule ? "Module details" : "Story modules"}
         </Link>
         <div className="flex flex-wrap items-start gap-3">
           <form onSubmit={saveTitle} className="flex min-w-0 flex-1 basis-72 gap-2">
@@ -213,9 +230,9 @@ export function VideoEditor(props: Props) {
               {titleState === "saving" && <LoaderCircleIcon className="animate-spin" aria-hidden />} Rename
             </Button>
           </form>
-          <DeleteVideoButton videoId={video.id} title={savedTitle} redirectTo="/videos" size="default" />
+          <DeleteVideoButton videoId={video.id} title={savedTitle} redirectTo="/modules" size="default" />
         </div>
-        <SharePanel videoId={video.id} initialShareId={video.shareId} initialListed={video.isListed} />
+        <ModuleBanner videoId={video.id} storyModule={storyModule} />
         {titleError && (
           <Alert variant="destructive" role="alert">
             <AlertDescription>{titleError}</AlertDescription>
@@ -245,7 +262,7 @@ export function VideoEditor(props: Props) {
           </div>
           {mediaError && (
             <Alert variant="destructive" role="alert">
-              <AlertDescription>This video could not be played in your browser. You can still edit its interactions.</AlertDescription>
+              <AlertDescription>This video could not be played in your browser. You can still edit its questions.</AlertDescription>
             </Alert>
           )}
 
@@ -265,14 +282,16 @@ export function VideoEditor(props: Props) {
                 <span className="text-muted-foreground"> / </span>
                 <span data-testid="total-duration">{formatPreciseTimestamp(duration)}</span>
               </p>
-              <div className="ml-auto flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={() => addAtCurrent("SURVEY")}>
-                  <ClipboardListIcon aria-hidden /> Add survey here
-                </Button>
-                <Button type="button" variant="outline" onClick={() => addAtCurrent("QUIZ")}>
-                  <CircleHelpIcon aria-hidden /> Add quiz here
-                </Button>
-              </div>
+              {storyModule && (
+                <div className="ml-auto flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={() => addAtCurrent("SURVEY")}>
+                    <ClipboardListIcon aria-hidden /> Add question here
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => addAtCurrent("QUIZ")}>
+                    <CircleHelpIcon aria-hidden /> Add predict quiz here
+                  </Button>
+                </div>
+              )}
             </div>
             <Timeline
               duration={duration}
@@ -287,9 +306,9 @@ export function VideoEditor(props: Props) {
 
           <section aria-labelledby="interactions-heading" className="space-y-3">
             <h2 id="interactions-heading" className="text-base font-semibold">
-              Interactions <span className="font-normal text-muted-foreground">({interactions.length})</span>
+              Story questions <span className="font-normal text-muted-foreground">({interactions.length})</span>
             </h2>
-            <InteractionList interactions={interactions} selectedId={selectedId} onSelect={select} />
+            <InteractionList interactions={interactions} selectedId={selectedId} onSelect={select} moduleVirtueIds={moduleVirtueIds} />
           </section>
         </div>
 
@@ -297,22 +316,30 @@ export function VideoEditor(props: Props) {
           <Card>
             <CardContent>
               {notice && (
-                <p role="status" className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <p role="status" className="mb-4 rounded-lg bg-success/10 px-3 py-2 text-sm font-medium text-success">
                   {notice}
                 </p>
               )}
-              {selection.kind === "none" ? (
+              {!storyModule ? (
+                <div className="py-6 text-center text-sm text-muted-foreground" data-testid="panel-setup">
+                  <p className="font-medium text-foreground">Set up the story module first</p>
+                  <p className="mt-1">Questions belong to a story module: choose its virtues, then add questions with virtue weights here.</p>
+                  <Link href={`/modules/new?video=${video.id}`} className="mt-3 inline-flex items-center gap-1 font-semibold text-primary hover:underline">
+                    Set up story module <ArrowRightIcon className="size-4" aria-hidden />
+                  </Link>
+                </div>
+              ) : selection.kind === "none" ? (
                 <div className="py-6 text-center text-sm text-muted-foreground" data-testid="panel-empty">
-                  <p className="font-medium text-foreground">Configure an interaction</p>
-                  <p className="mt-1">
-                    Select a marker or list item to edit it, or use “Add survey here” / “Add quiz here” at the current position.
-                  </p>
+                  <p className="font-medium text-foreground">Configure a story question</p>
+                  <p className="mt-1">Select a marker or list item to edit it, or use “Add question here” at the current position.</p>
+                  <p className="mt-2">Each question gets a style and virtue weights, which is how answers turn into virtue scores.</p>
                 </div>
               ) : (
                 <InteractionForm
                   key={panelKey}
                   videoId={video.id}
                   duration={duration}
+                  storyModule={storyModule}
                   initial={selection.kind === "new" ? emptyDraft(selection.type, selection.timestamp) : draftFrom(selected!)}
                   currentTime={currentTime}
                   onTimeChange={onTimeChange}
@@ -324,14 +351,14 @@ export function VideoEditor(props: Props) {
                     setInteractions((prev) => sortInteractions([...prev.filter((i) => i.id !== saved.id), saved]));
                     setSelection({ kind: "existing", id: saved.id });
                     setVersion((v) => v + 1);
-                    setNotice("Interaction saved.");
+                    setNotice("Question saved.");
                   }}
                   onDeleted={(id) => {
                     dirtyRef.current = false;
                     setDraftTime(null);
                     setInteractions((prev) => prev.filter((i) => i.id !== id));
                     setSelection({ kind: "none" });
-                    setNotice("Interaction deleted.");
+                    setNotice("Question deleted.");
                   }}
                 />
               )}
@@ -339,6 +366,59 @@ export function VideoEditor(props: Props) {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * What this video is in PARICHAY: a story module (its virtues, status and a link to the module details) or a plain video
+ * that can be turned into one.
+ */
+function ModuleBanner({ videoId, storyModule }: { videoId: number; storyModule: EditorModule | null }) {
+  if (!storyModule) {
+    return (
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed px-4 py-3" data-testid="module-banner">
+        <BookOpenIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <p className="min-w-0 flex-1 basis-60 text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Not set up yet.</span> Turn this video into a story module (virtues, learning objective,
+          discussion prompts) before adding questions.
+        </p>
+        <Link href={`/modules/new?video=${videoId}`} className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+          Set up story module <ArrowRightIcon className="size-4" aria-hidden />
+        </Link>
+      </div>
+    );
+  }
+  const published = storyModule.status === "PUBLISHED";
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border bg-card px-4 py-3" data-testid="module-banner">
+      <span className="flex items-center gap-2 text-sm font-semibold">
+        <BookOpenIcon className="size-4 text-primary" aria-hidden /> Story module
+      </span>
+      <ul className="flex flex-wrap gap-1.5" aria-label="Virtues of this module">
+        {storyModule.virtues.map((v) => {
+          const d = virtueDisplay(v.slug, v.name);
+          const Icon = d.icon;
+          return (
+            <li key={v.id} className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium" style={virtueTint(d.color)}>
+              <Icon className="size-3.5" style={{ color: d.color }} aria-hidden />
+              {v.name}
+              <span className="text-muted-foreground">{v.role === "primary" ? "· main" : ""}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <span
+        className={cn(
+          "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+          published ? "bg-success/10 text-success" : "bg-warning/10 text-warning",
+        )}
+      >
+        {published ? "Published" : "Draft: hidden from students"}
+      </span>
+      <Link href={`/modules/${storyModule.moduleId}`} className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+        Module details <ArrowRightIcon className="size-4" aria-hidden />
+      </Link>
     </div>
   );
 }

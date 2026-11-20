@@ -51,8 +51,7 @@ async function Watch({ params }: Pick<PageProps<"/watch/[shareId]">, "params">) 
             </p>
           ) : (
             <p>
-              <Link href={withNext("/login", here)} className="font-medium underline underline-offset-4">Sign in</Link> or{" "}
-              <Link href={withNext("/register", here)} className="font-medium underline underline-offset-4">create an account</Link> to answer the questions. You need an account to answer; answering again replaces your earlier answer.
+              <Link href={withNext("/login", here)} className="font-medium underline underline-offset-4">Sign in</Link> to answer the questions. Students get their username and PIN from their teacher. Answering again replaces your earlier answer.
             </p>
           )}
         </aside>

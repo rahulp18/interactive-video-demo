@@ -35,12 +35,12 @@ export function UploadPanel() {
         disabled={!title.trim() || savedTitle !== null}
         onUploaded={(video) => {
           setSavedTitle(video.title);
-          router.push(`/videos/${video.id}`);
+          router.push(`/modules/new?video=${video.id}`);
         }}
       />
 
       {savedTitle !== null && (
-        <p role="status" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400">
+        <p role="status" className="flex items-center gap-2 text-sm text-success">
           <CheckCircle2Icon className="size-4" aria-hidden /> Saved “{savedTitle}”. Opening the editor…
         </p>
       )}

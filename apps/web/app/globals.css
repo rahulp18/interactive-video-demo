@@ -27,6 +27,9 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -64,6 +67,10 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  /* Status colours (text-safe on the background: ~4.5:1 or better). Themes may override them. */
+  --success: oklch(0.52 0.13 155);
+  --warning: oklch(0.56 0.13 65);
+  --info: oklch(0.5 0.1 225);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -99,6 +106,9 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.76 0.14 155);
+  --warning: oklch(0.8 0.13 75);
+  --info: oklch(0.75 0.1 225);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -127,4 +137,292 @@
   html {
     @apply font-sans;
   }
+}
+/*
+ * Student theme. Scoped by attribute: AppFrame sets data-audience="student" on its root for students only, so the
+ * teacher UI keeps the neutral tokens above and renders exactly as before. Warm, bright, rounder, slightly larger.
+ * Text pairs meet WCAG AA: primary-foreground on primary ~6:1, muted-foreground on background ~5:1. State is never
+ * colour-only (active nav items also get a bar/weight and aria-current), so it stays readable for colour-blind kids.
+ */
+[data-audience="student"] {
+  --background: oklch(0.985 0.014 85);
+  --foreground: oklch(0.24 0.03 50);
+  --card: oklch(1 0.005 85);
+  --card-foreground: oklch(0.24 0.03 50);
+  --popover: oklch(1 0.005 85);
+  --popover-foreground: oklch(0.24 0.03 50);
+  --primary: oklch(0.52 0.16 48);
+  --primary-foreground: oklch(0.99 0.01 85);
+  --secondary: oklch(0.94 0.045 195);
+  --secondary-foreground: oklch(0.3 0.07 215);
+  --muted: oklch(0.955 0.025 85);
+  --muted-foreground: oklch(0.46 0.03 55);
+  --accent: oklch(0.93 0.07 85);
+  --accent-foreground: oklch(0.3 0.08 60);
+  --border: oklch(0.89 0.03 75);
+  --input: oklch(0.85 0.04 75);
+  --ring: oklch(0.6 0.17 48);
+  --radius: 1.1rem;
+  /* Dark sidebar, same as the teacher studio: light text (~13:1), current page = orange pill with dark text (~7:1). */
+  --sidebar: oklch(0.255 0.03 50);
+  --sidebar-foreground: oklch(0.96 0.012 80);
+  --sidebar-primary: oklch(0.76 0.14 60);
+  --sidebar-primary-foreground: oklch(0.21 0.04 50);
+  --sidebar-accent: oklch(0.32 0.035 52);
+  --sidebar-accent-foreground: oklch(0.97 0.01 80);
+  --sidebar-border: oklch(1 0.02 80 / 11%);
+  --sidebar-ring: oklch(0.78 0.13 62);
+  --student-leaf: oklch(0.5 0.12 155);
+  --student-trunk: oklch(0.42 0.07 60);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-student), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9375rem;
+  /* Type scale for children (base 15px). Tailwind's text-* and font-* utilities read these, so every page follows. */
+  --text-4xl: 1.75rem;
+  --text-3xl: 1.5rem;
+  --text-2xl: 1.25rem;
+  --text-xl: 1.125rem;
+  --text-lg: 1rem;
+  --text-base: 0.9375rem;
+  --font-weight-extrabold: 700;
+  --font-weight-bold: 650;
+}
+
+.dark [data-audience="student"] {
+  --background: oklch(0.2 0.025 50);
+  --foreground: oklch(0.96 0.015 85);
+  --card: oklch(0.255 0.03 50);
+  --card-foreground: oklch(0.96 0.015 85);
+  --popover: oklch(0.255 0.03 50);
+  --popover-foreground: oklch(0.96 0.015 85);
+  --primary: oklch(0.78 0.14 62);
+  --primary-foreground: oklch(0.22 0.04 50);
+  --secondary: oklch(0.32 0.04 210);
+  --secondary-foreground: oklch(0.94 0.03 200);
+  --muted: oklch(0.3 0.03 50);
+  --muted-foreground: oklch(0.78 0.03 75);
+  --accent: oklch(0.34 0.05 70);
+  --accent-foreground: oklch(0.95 0.04 85);
+  --border: oklch(1 0.02 80 / 16%);
+  --input: oklch(1 0.02 80 / 22%);
+  --ring: oklch(0.75 0.14 62);
+  --sidebar: oklch(0.17 0.02 50);
+  --sidebar-foreground: oklch(0.95 0.012 85);
+  --sidebar-primary: oklch(0.78 0.14 62);
+  --sidebar-primary-foreground: oklch(0.21 0.04 50);
+  --sidebar-accent: oklch(0.26 0.03 52);
+  --sidebar-accent-foreground: oklch(0.97 0.02 85);
+  --sidebar-border: oklch(1 0.02 80 / 10%);
+  --sidebar-ring: oklch(0.75 0.14 62);
+  --student-leaf: oklch(0.78 0.13 155);
+  --student-trunk: oklch(0.62 0.07 65);
+}
+
+/* Child-facing touch targets: at least 48 x 48 px for every control in the student shell (SRS section 3). */
+[data-audience="student"] :is(button, select, textarea, input:not([type="checkbox"], [type="radio"], [type="hidden"]), [role="button"], [data-touch]) {
+  min-height: 3rem;
+}
+[data-audience="student"] :is(button, [role="button"], [data-touch]) {
+  min-width: 3rem;
+}
+
+/* Virtue tree: a gentle sway. Switched off for children who ask their device for less motion. */
+@keyframes tree-sway {
+  0%,
+  100% {
+    transform: rotate(-0.8deg);
+  }
+  50% {
+    transform: rotate(0.8deg);
+  }
+}
+.tree-sway {
+  transform-origin: 50% 100%;
+  animation: tree-sway 8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tree-sway {
+    animation: none;
+  }
+}
+
+/*
+ * Parent preview ("For grown-ups"): adult-facing, so it uses the standard neutral tokens instead of the warm student
+ * theme it is rendered inside. Same values as :root / .dark above.
+ */
+.adult-report {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --border: oklch(0.88 0 0);
+  --input: oklch(0.88 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+}
+.dark .adult-report {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.556 0 0);
+}
+
+/* Print / Save as PDF: the shell is hidden with `print:hidden` in AppFrame; here the report itself is tidied. */
+@media print {
+  .adult-report {
+    background: #fff !important;
+    color: #000 !important;
+    --background: #fff;
+    --foreground: #000;
+    --card: #fff;
+    --card-foreground: #000;
+    --muted: #f4f4f4;
+    --muted-foreground: #444;
+    --border: #bbb;
+  }
+  .adult-report .print-avoid-break {
+    break-inside: avoid;
+  }
+  .adult-report .print-page-break {
+    break-before: page;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
+
+/* Auth mascot + playful shapes. Both are switched off for children who ask their device for less motion. */
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-14deg); }
+}
+@keyframes blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--r, 0deg)); }
+}
+.bob {
+  animation: bob 5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bob { animation: none; }
+}
+
+/*
+ * Teacher workspace theme. Same PARICHAY brand (warm orange, teal, leaf green) as the student app but calmer and denser
+ * for adults: a soft paper background, white cards with a gentle shadow, rounded corners, Nunito. Scoped by attribute
+ * like the student theme; AppFrame sets data-audience="teacher". Primary-foreground on primary is ~6:1 (WCAG AA).
+ */
+[data-audience="teacher"] {
+  --background: oklch(0.975 0.008 80);
+  --foreground: oklch(0.24 0.03 50);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.03 50);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.03 50);
+  --primary: oklch(0.52 0.16 48);
+  --primary-foreground: oklch(0.99 0.01 85);
+  --secondary: oklch(0.95 0.03 195);
+  --secondary-foreground: oklch(0.3 0.07 215);
+  --muted: oklch(0.95 0.012 80);
+  --muted-foreground: oklch(0.48 0.025 55);
+  --accent: oklch(0.95 0.045 80);
+  --accent-foreground: oklch(0.3 0.08 55);
+  --border: oklch(0.91 0.015 75);
+  --input: oklch(0.87 0.02 75);
+  --ring: oklch(0.6 0.17 48);
+  --radius: 0.9rem;
+  /* Studio sidebar (teacher): a dark cocoa panel in light AND dark mode, so the workspace frame stands apart from the content.
+     Active items use a lighter brand orange with dark text (~7:1); muted labels use foreground at 60%+ (~5:1). */
+  --sidebar: oklch(0.255 0.03 50);
+  --sidebar-foreground: oklch(0.96 0.012 80);
+  --sidebar-primary: oklch(0.76 0.14 60);
+  --sidebar-primary-foreground: oklch(0.21 0.04 50);
+  --sidebar-accent: oklch(0.32 0.035 52);
+  --sidebar-accent-foreground: oklch(0.97 0.01 80);
+  --sidebar-border: oklch(1 0.02 80 / 11%);
+  --sidebar-ring: oklch(0.78 0.13 62);
+  /* Status colours from the same brand family: leaf green, amber, teal. Text-safe on --background and --card. */
+  --success: oklch(0.5 0.12 155);
+  --warning: oklch(0.55 0.13 62);
+  --info: oklch(0.5 0.09 210);
+  /* Brand leaf green, used by the mascot. */
+  --student-leaf: oklch(0.5 0.12 155);
+  /* Adult workspace type: Geist (crisp UI sans) and a compact scale. Tailwind's text-* and font-* utilities read these,
+     so every teacher page gets calmer headings without touching component classes. */
+  --text-4xl: 1.875rem;
+  --text-3xl: 1.5rem;
+  --text-2xl: 1.3125rem;
+  --text-xl: 1.125rem;
+  --text-lg: 1rem;
+  --text-base: 0.9375rem;
+  --font-weight-extrabold: 650;
+  --font-weight-bold: 600;
+  --font-weight-semibold: 550;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9375rem;
+  letter-spacing: -0.005em;
+}
+.dark [data-audience="teacher"] {
+  --background: oklch(0.2 0.02 50);
+  --foreground: oklch(0.96 0.012 85);
+  --card: oklch(0.25 0.025 50);
+  --card-foreground: oklch(0.96 0.012 85);
+  --popover: oklch(0.25 0.025 50);
+  --popover-foreground: oklch(0.96 0.012 85);
+  --primary: oklch(0.78 0.14 62);
+  --primary-foreground: oklch(0.22 0.04 50);
+  --secondary: oklch(0.32 0.04 210);
+  --secondary-foreground: oklch(0.94 0.03 200);
+  --muted: oklch(0.29 0.025 50);
+  --muted-foreground: oklch(0.76 0.025 75);
+  --accent: oklch(0.34 0.05 70);
+  --accent-foreground: oklch(0.95 0.04 85);
+  --border: oklch(1 0.02 80 / 14%);
+  --input: oklch(1 0.02 80 / 20%);
+  --ring: oklch(0.75 0.14 62);
+  --sidebar: oklch(0.17 0.02 50);
+  --sidebar-foreground: oklch(0.95 0.012 85);
+  --sidebar-primary: oklch(0.78 0.14 62);
+  --sidebar-primary-foreground: oklch(0.21 0.04 50);
+  --sidebar-accent: oklch(0.26 0.03 52);
+  --sidebar-accent-foreground: oklch(0.97 0.02 85);
+  --sidebar-border: oklch(1 0.02 80 / 10%);
+  --sidebar-ring: oklch(0.75 0.14 62);
+  --success: oklch(0.78 0.13 155);
+  --warning: oklch(0.82 0.12 75);
+  --info: oklch(0.78 0.09 205);
+  --student-leaf: oklch(0.78 0.13 155);
+}
+[data-audience="teacher"] [data-slot="card"] {
+  box-shadow: 0 1px 2px oklch(0.3 0.05 50 / 0.05), 0 8px 24px -14px oklch(0.3 0.05 50 / 0.18);
 }

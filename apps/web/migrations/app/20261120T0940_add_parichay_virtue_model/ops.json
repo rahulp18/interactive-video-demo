@@ -1,0 +1,2632 @@
+[
+  {
+    "id": "table.Journey",
+    "label": "Create table \"Journey\"",
+    "summary": "Creates table \"Journey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Journey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Journey\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Journey\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Journey\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Journey\"",
+        "sql": "CREATE TABLE \"public\".\"Journey\" (\n  \"createdAt\" timestamptz(3) NOT NULL,\n  \"description\" text NOT NULL,\n  \"displayOrder\" int4 DEFAULT 0 NOT NULL,\n  \"focusVirtueId\" int4,\n  \"id\" SERIAL NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Journey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Journey\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Journey\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.JourneyModule",
+    "label": "Create table \"JourneyModule\"",
+    "summary": "Creates table \"JourneyModule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"JourneyModule\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"JourneyModule\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"JourneyModule\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"JourneyModule\"",
+        "sql": "CREATE TABLE \"public\".\"JourneyModule\" (\n  \"id\" SERIAL NOT NULL,\n  \"journeyId\" int4 NOT NULL,\n  \"level\" int4 NOT NULL,\n  \"moduleId\" int4 NOT NULL,\n  \"position\" int4 DEFAULT 0 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"journey_module_level_positive_28bb2a3c\" CHECK (\"level\" >= 1),\n  CONSTRAINT \"journey_module_position_nonneg_f43e8efc\" CHECK (\"position\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"JourneyModule\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"JourneyModule\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"JourneyModule\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.Module",
+    "label": "Create table \"Module\"",
+    "summary": "Creates table \"Module\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Module"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Module\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Module\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Module\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Module\"",
+        "sql": "CREATE TABLE \"public\".\"Module\" (\n  \"ageBand\" text NOT NULL,\n  \"createdAt\" timestamptz(3) NOT NULL,\n  \"discussionPrompts\" text[] NOT NULL,\n  \"followUpActivity\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"learningObjective\" text NOT NULL,\n  \"primaryVirtueId\" int4 NOT NULL,\n  \"sourceStory\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"videoId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Module_ageBand_check_85d7e4e4\" CHECK (\"ageBand\" IN ('8-9', '10-12')),\n  CONSTRAINT \"Module_discussionPrompts_elem_not_null_a9f52e86\" CHECK (array_position(\"discussionPrompts\", NULL) IS NULL),\n  CONSTRAINT \"Module_status_check_1b4a7b6b\" CHECK (\"status\" IN ('DRAFT', 'PUBLISHED')),\n  CONSTRAINT \"module_version_positive_efd86c31\" CHECK (\"version\" >= 1)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Module\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Module\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Module\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.ModuleProgress",
+    "label": "Create table \"ModuleProgress\"",
+    "summary": "Creates table \"ModuleProgress\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ModuleProgress"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ModuleProgress\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleProgress\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"ModuleProgress\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ModuleProgress\"",
+        "sql": "CREATE TABLE \"public\".\"ModuleProgress\" (\n  \"completedAt\" timestamptz(3),\n  \"id\" SERIAL NOT NULL,\n  \"lastPositionSeconds\" float8 DEFAULT 0 NOT NULL,\n  \"moduleId\" int4 NOT NULL,\n  \"startedAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"progress_position_nonneg_5a814b60\" CHECK (\"lastPositionSeconds\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ModuleProgress\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleProgress\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"ModuleProgress\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.ModuleSecondaryVirtue",
+    "label": "Create table \"ModuleSecondaryVirtue\"",
+    "summary": "Creates table \"ModuleSecondaryVirtue\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ModuleSecondaryVirtue\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleSecondaryVirtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"ModuleSecondaryVirtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ModuleSecondaryVirtue\"",
+        "sql": "CREATE TABLE \"public\".\"ModuleSecondaryVirtue\" (\n  \"id\" SERIAL NOT NULL,\n  \"moduleId\" int4 NOT NULL,\n  \"position\" int4 NOT NULL,\n  \"primaryVirtueId\" int4 NOT NULL,\n  \"virtueId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"module_secondary_not_primary_c96bdc71\" CHECK (\"virtueId\" <> \"primaryVirtueId\"),\n  CONSTRAINT \"module_secondary_position_bd4b0c45\" CHECK (\"position\" IN (1, 2))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ModuleSecondaryVirtue\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"ModuleSecondaryVirtue\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.OptionVirtueWeight",
+    "label": "Create table \"OptionVirtueWeight\"",
+    "summary": "Creates table \"OptionVirtueWeight\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "OptionVirtueWeight"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"OptionVirtueWeight\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"OptionVirtueWeight\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"OptionVirtueWeight\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"OptionVirtueWeight\"",
+        "sql": "CREATE TABLE \"public\".\"OptionVirtueWeight\" (\n  \"id\" SERIAL NOT NULL,\n  \"optionId\" int4 NOT NULL,\n  \"virtueId\" int4 NOT NULL,\n  \"weight\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"option_weight_range_1322491d\" CHECK (\"weight\" BETWEEN -2 AND 2 AND \"weight\" <> 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"OptionVirtueWeight\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"OptionVirtueWeight\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"OptionVirtueWeight\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.Virtue",
+    "label": "Create table \"Virtue\"",
+    "summary": "Creates table \"Virtue\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Virtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Virtue\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Virtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Virtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Virtue\"",
+        "sql": "CREATE TABLE \"public\".\"Virtue\" (\n  \"essence\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"position\" int4 NOT NULL,\n  \"slug\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"virtue_position_range_ecfe7de6\" CHECK (\"position\" BETWEEN 1 AND 10)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Virtue\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Virtue\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Virtue\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.VirtueRating",
+    "label": "Create table \"VirtueRating\"",
+    "summary": "Creates table \"VirtueRating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "VirtueRating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"VirtueRating\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"VirtueRating\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"VirtueRating\"",
+        "sql": "CREATE TABLE \"public\".\"VirtueRating\" (\n  \"id\" SERIAL NOT NULL,\n  \"mark\" text DEFAULT 'NONE' NOT NULL,\n  \"notes\" text,\n  \"ratedAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"raterKind\" text NOT NULL,\n  \"raterName\" text NOT NULL,\n  \"rating\" int4 NOT NULL,\n  \"studentId\" int4 NOT NULL,\n  \"virtueId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"VirtueRating_mark_check_5f4e5d6c\" CHECK (\"mark\" IN ('NONE', 'STRENGTH', 'IMPROVE')),\n  CONSTRAINT \"VirtueRating_raterKind_check_6700c037\" CHECK (\"raterKind\" IN ('PARENT', 'TEACHER')),\n  CONSTRAINT \"virtue_rating_range_63f6196d\" CHECK (\"rating\" BETWEEN 1 AND 5)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"VirtueRating\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"VirtueRating\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "column.public.Interaction.presentationStyle",
+    "label": "Add column \"presentationStyle\" to \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "presentationStyle",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"presentationStyle\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "presentationStyle"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"presentationStyle\" on \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"presentationStyle\"",
+        "sql": "ALTER TABLE \"public\".\"Interaction\" ADD COLUMN \"presentationStyle\" text DEFAULT 'MORAL_CHOICE' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"presentationStyle\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "presentationStyle"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"presentationStyle\" on \"Interaction\""
+        }
+      },
+      {
+        "description": "verify column \"presentationStyle\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "presentationStyle",
+          "text"
+        ]
+      },
+      {
+        "description": "verify column \"presentationStyle\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Interaction",
+          "presentationStyle",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.InteractionResponse.attemptCount",
+    "label": "Add column \"attemptCount\" to \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "attemptCount",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"attemptCount\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "attemptCount"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"attemptCount\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"attemptCount\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD COLUMN \"attemptCount\" int4 DEFAULT 1 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"attemptCount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "attemptCount"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"attemptCount\" on \"InteractionResponse\""
+        }
+      },
+      {
+        "description": "verify column \"attemptCount\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "attemptCount",
+          "integer"
+        ]
+      },
+      {
+        "description": "verify column \"attemptCount\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "attemptCount",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.InteractionResponse.replayCount",
+    "label": "Add column \"replayCount\" to \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "replayCount",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"replayCount\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "replayCount"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"replayCount\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"replayCount\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD COLUMN \"replayCount\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"replayCount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "replayCount"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"replayCount\" on \"InteractionResponse\""
+        }
+      },
+      {
+        "description": "verify column \"replayCount\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "replayCount",
+          "integer"
+        ]
+      },
+      {
+        "description": "verify column \"replayCount\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "replayCount",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.InteractionResponse.responseTimeMs",
+    "label": "Add column \"responseTimeMs\" to \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "responseTimeMs",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"responseTimeMs\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "responseTimeMs"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"responseTimeMs\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"responseTimeMs\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD COLUMN \"responseTimeMs\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"responseTimeMs\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "responseTimeMs"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"responseTimeMs\" on \"InteractionResponse\""
+        }
+      },
+      {
+        "description": "verify column \"responseTimeMs\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "InteractionResponse",
+          "responseTimeMs",
+          "integer"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Interaction.Interaction_presentationStyle_check_1e360111",
+    "label": "Add check constraint \"Interaction_presentationStyle_check_1e360111\" on \"Interaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Interaction_presentationStyle_check_1e360111",
+        "table": "Interaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Interaction_presentationStyle_check_1e360111\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Interaction_presentationStyle_check_1e360111",
+          "public",
+          "\"public\".\"Interaction\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Interaction_presentationStyle_check_1e360111\" on \"Interaction\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Interaction_presentationStyle_check_1e360111\"",
+        "sql": "ALTER TABLE \"public\".\"Interaction\" ADD CONSTRAINT \"Interaction_presentationStyle_check_1e360111\" CHECK (\"presentationStyle\" IN ('MORAL_CHOICE', 'SITUATIONAL', 'EMOTION', 'PREDICT', 'RATING'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"Interaction_presentationStyle_check_1e360111\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "Interaction_presentationStyle_check_1e360111",
+          "public",
+          "\"public\".\"Interaction\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.InteractionResponse.response_attempt_positive_62c2cdd0",
+    "label": "Add check constraint \"response_attempt_positive_62c2cdd0\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "response_attempt_positive_62c2cdd0",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"response_attempt_positive_62c2cdd0\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_attempt_positive_62c2cdd0",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"response_attempt_positive_62c2cdd0\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"response_attempt_positive_62c2cdd0\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD CONSTRAINT \"response_attempt_positive_62c2cdd0\" CHECK (\"attemptCount\" >= 1)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"response_attempt_positive_62c2cdd0\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "response_attempt_positive_62c2cdd0",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.InteractionResponse.response_replays_nonneg_b93945e1",
+    "label": "Add check constraint \"response_replays_nonneg_b93945e1\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "response_replays_nonneg_b93945e1",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"response_replays_nonneg_b93945e1\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_replays_nonneg_b93945e1",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"response_replays_nonneg_b93945e1\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"response_replays_nonneg_b93945e1\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD CONSTRAINT \"response_replays_nonneg_b93945e1\" CHECK (\"replayCount\" >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"response_replays_nonneg_b93945e1\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "response_replays_nonneg_b93945e1",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.InteractionResponse.response_time_nonneg_a3ea0795",
+    "label": "Add check constraint \"response_time_nonneg_a3ea0795\" on \"InteractionResponse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "response_time_nonneg_a3ea0795",
+        "table": "InteractionResponse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"response_time_nonneg_a3ea0795\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "response_time_nonneg_a3ea0795",
+          "public",
+          "\"public\".\"InteractionResponse\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"response_time_nonneg_a3ea0795\" on \"InteractionResponse\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"response_time_nonneg_a3ea0795\"",
+        "sql": "ALTER TABLE \"public\".\"InteractionResponse\" ADD CONSTRAINT \"response_time_nonneg_a3ea0795\" CHECK (\"responseTimeMs\" IS NULL OR \"responseTimeMs\" >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"response_time_nonneg_a3ea0795\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "response_time_nonneg_a3ea0795",
+          "public",
+          "\"public\".\"InteractionResponse\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.JourneyModule.JourneyModule_journeyId_moduleId_key",
+    "label": "Add unique constraint on \"JourneyModule\" (journeyId, moduleId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "JourneyModule_journeyId_moduleId_key",
+        "table": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"JourneyModule_journeyId_moduleId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "JourneyModule_journeyId_moduleId_key",
+          "public",
+          "\"public\".\"JourneyModule\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"JourneyModule_journeyId_moduleId_key\" on \"JourneyModule\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"JourneyModule_journeyId_moduleId_key\"",
+        "sql": "ALTER TABLE \"public\".\"JourneyModule\" ADD CONSTRAINT \"JourneyModule_journeyId_moduleId_key\" UNIQUE (\"journeyId\", \"moduleId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"JourneyModule_journeyId_moduleId_key\" exists on (journeyId, moduleId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "JourneyModule_journeyId_moduleId_key",
+          "public",
+          "\"public\".\"JourneyModule\"",
+          "u",
+          "[\"journeyId\",\"moduleId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.JourneyModule.JourneyModule_journeyId_level_position_key",
+    "label": "Add unique constraint on \"JourneyModule\" (journeyId, level, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "JourneyModule_journeyId_level_position_key",
+        "table": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"JourneyModule_journeyId_level_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "JourneyModule_journeyId_level_position_key",
+          "public",
+          "\"public\".\"JourneyModule\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"JourneyModule_journeyId_level_position_key\" on \"JourneyModule\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"JourneyModule_journeyId_level_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"JourneyModule\" ADD CONSTRAINT \"JourneyModule_journeyId_level_position_key\" UNIQUE (\"journeyId\", \"level\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"JourneyModule_journeyId_level_position_key\" exists on (journeyId, level, position)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "JourneyModule_journeyId_level_position_key",
+          "public",
+          "\"public\".\"JourneyModule\"",
+          "u",
+          "[\"journeyId\",\"level\",\"position\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Module.Module_videoId_key",
+    "label": "Add unique constraint on \"Module\" (videoId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Module_videoId_key",
+        "table": "Module"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Module_videoId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Module_videoId_key",
+          "public",
+          "\"public\".\"Module\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Module_videoId_key\" on \"Module\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Module_videoId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Module\" ADD CONSTRAINT \"Module_videoId_key\" UNIQUE (\"videoId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"Module_videoId_key\" exists on (videoId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "Module_videoId_key",
+          "public",
+          "\"public\".\"Module\"",
+          "u",
+          "[\"videoId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Module.Module_id_primaryVirtueId_key",
+    "label": "Add unique constraint on \"Module\" (id, primaryVirtueId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Module_id_primaryVirtueId_key",
+        "table": "Module"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Module_id_primaryVirtueId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Module_id_primaryVirtueId_key",
+          "public",
+          "\"public\".\"Module\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Module_id_primaryVirtueId_key\" on \"Module\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Module_id_primaryVirtueId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Module\" ADD CONSTRAINT \"Module_id_primaryVirtueId_key\" UNIQUE (\"id\", \"primaryVirtueId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"Module_id_primaryVirtueId_key\" exists on (id, primaryVirtueId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "Module_id_primaryVirtueId_key",
+          "public",
+          "\"public\".\"Module\"",
+          "u",
+          "[\"id\",\"primaryVirtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.ModuleProgress.ModuleProgress_userId_moduleId_key",
+    "label": "Add unique constraint on \"ModuleProgress\" (userId, moduleId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "ModuleProgress_userId_moduleId_key",
+        "table": "ModuleProgress"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"ModuleProgress_userId_moduleId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleProgress_userId_moduleId_key",
+          "public",
+          "\"public\".\"ModuleProgress\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"ModuleProgress_userId_moduleId_key\" on \"ModuleProgress\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"ModuleProgress_userId_moduleId_key\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleProgress\" ADD CONSTRAINT \"ModuleProgress_userId_moduleId_key\" UNIQUE (\"userId\", \"moduleId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"ModuleProgress_userId_moduleId_key\" exists on (userId, moduleId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "ModuleProgress_userId_moduleId_key",
+          "public",
+          "\"public\".\"ModuleProgress\"",
+          "u",
+          "[\"userId\",\"moduleId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.ModuleSecondaryVirtue.ModuleSecondaryVirtue_moduleId_position_key",
+    "label": "Add unique constraint on \"ModuleSecondaryVirtue\" (moduleId, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "ModuleSecondaryVirtue_moduleId_position_key",
+        "table": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"ModuleSecondaryVirtue_moduleId_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_moduleId_position_key",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"ModuleSecondaryVirtue_moduleId_position_key\" on \"ModuleSecondaryVirtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"ModuleSecondaryVirtue_moduleId_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleSecondaryVirtue\" ADD CONSTRAINT \"ModuleSecondaryVirtue_moduleId_position_key\" UNIQUE (\"moduleId\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"ModuleSecondaryVirtue_moduleId_position_key\" exists on (moduleId, position)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_moduleId_position_key",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "u",
+          "[\"moduleId\",\"position\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.ModuleSecondaryVirtue.ModuleSecondaryVirtue_moduleId_virtueId_key",
+    "label": "Add unique constraint on \"ModuleSecondaryVirtue\" (moduleId, virtueId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "ModuleSecondaryVirtue_moduleId_virtueId_key",
+        "table": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"ModuleSecondaryVirtue_moduleId_virtueId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_moduleId_virtueId_key",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"ModuleSecondaryVirtue_moduleId_virtueId_key\" on \"ModuleSecondaryVirtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"ModuleSecondaryVirtue_moduleId_virtueId_key\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleSecondaryVirtue\" ADD CONSTRAINT \"ModuleSecondaryVirtue_moduleId_virtueId_key\" UNIQUE (\"moduleId\", \"virtueId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"ModuleSecondaryVirtue_moduleId_virtueId_key\" exists on (moduleId, virtueId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_moduleId_virtueId_key",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "u",
+          "[\"moduleId\",\"virtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.OptionVirtueWeight.OptionVirtueWeight_optionId_virtueId_key",
+    "label": "Add unique constraint on \"OptionVirtueWeight\" (optionId, virtueId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "OptionVirtueWeight_optionId_virtueId_key",
+        "table": "OptionVirtueWeight"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"OptionVirtueWeight_optionId_virtueId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "OptionVirtueWeight_optionId_virtueId_key",
+          "public",
+          "\"public\".\"OptionVirtueWeight\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"OptionVirtueWeight_optionId_virtueId_key\" on \"OptionVirtueWeight\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"OptionVirtueWeight_optionId_virtueId_key\"",
+        "sql": "ALTER TABLE \"public\".\"OptionVirtueWeight\" ADD CONSTRAINT \"OptionVirtueWeight_optionId_virtueId_key\" UNIQUE (\"optionId\", \"virtueId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"OptionVirtueWeight_optionId_virtueId_key\" exists on (optionId, virtueId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "OptionVirtueWeight_optionId_virtueId_key",
+          "public",
+          "\"public\".\"OptionVirtueWeight\"",
+          "u",
+          "[\"optionId\",\"virtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Virtue.Virtue_slug_key",
+    "label": "Add unique constraint on \"Virtue\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Virtue_slug_key",
+        "table": "Virtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Virtue_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Virtue_slug_key",
+          "public",
+          "\"public\".\"Virtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Virtue_slug_key\" on \"Virtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Virtue_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"Virtue\" ADD CONSTRAINT \"Virtue_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"Virtue_slug_key\" exists on (slug)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "Virtue_slug_key",
+          "public",
+          "\"public\".\"Virtue\"",
+          "u",
+          "[\"slug\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Virtue.Virtue_position_key",
+    "label": "Add unique constraint on \"Virtue\" (position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Virtue_position_key",
+        "table": "Virtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Virtue_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Virtue_position_key",
+          "public",
+          "\"public\".\"Virtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Virtue_position_key\" on \"Virtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Virtue_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"Virtue\" ADD CONSTRAINT \"Virtue_position_key\" UNIQUE (\"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"Virtue_position_key\" exists on (position)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "Virtue_position_key",
+          "public",
+          "\"public\".\"Virtue\"",
+          "u",
+          "[\"position\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Journey.Journey_focusVirtueId_idx_9e10deff",
+    "label": "Create index \"Journey_focusVirtueId_idx_9e10deff\" on \"Journey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Journey_focusVirtueId_idx_9e10deff",
+        "table": "Journey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Journey_focusVirtueId_idx_9e10deff\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Journey_focusVirtueId_idx_9e10deff\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"Journey_focusVirtueId_idx_9e10deff\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Journey_focusVirtueId_idx_9e10deff\"",
+        "sql": "CREATE INDEX \"Journey_focusVirtueId_idx_9e10deff\" ON \"public\".\"Journey\" (\"focusVirtueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Journey_focusVirtueId_idx_9e10deff\" exists on \"Journey\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"Journey_focusVirtueId_idx_9e10deff\"",
+          "i",
+          "I",
+          "\"public\".\"Journey\"",
+          "btree",
+          "[\"focusVirtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.JourneyModule.JourneyModule_journeyId_idx_6d2acbdc",
+    "label": "Create index \"JourneyModule_journeyId_idx_6d2acbdc\" on \"JourneyModule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "JourneyModule_journeyId_idx_6d2acbdc",
+        "table": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"JourneyModule_journeyId_idx_6d2acbdc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"JourneyModule_journeyId_idx_6d2acbdc\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"JourneyModule_journeyId_idx_6d2acbdc\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"JourneyModule_journeyId_idx_6d2acbdc\"",
+        "sql": "CREATE INDEX \"JourneyModule_journeyId_idx_6d2acbdc\" ON \"public\".\"JourneyModule\" (\"journeyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"JourneyModule_journeyId_idx_6d2acbdc\" exists on \"JourneyModule\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"JourneyModule_journeyId_idx_6d2acbdc\"",
+          "i",
+          "I",
+          "\"public\".\"JourneyModule\"",
+          "btree",
+          "[\"journeyId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.JourneyModule.JourneyModule_moduleId_idx_04fe188b",
+    "label": "Create index \"JourneyModule_moduleId_idx_04fe188b\" on \"JourneyModule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "JourneyModule_moduleId_idx_04fe188b",
+        "table": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"JourneyModule_moduleId_idx_04fe188b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"JourneyModule_moduleId_idx_04fe188b\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"JourneyModule_moduleId_idx_04fe188b\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"JourneyModule_moduleId_idx_04fe188b\"",
+        "sql": "CREATE INDEX \"JourneyModule_moduleId_idx_04fe188b\" ON \"public\".\"JourneyModule\" (\"moduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"JourneyModule_moduleId_idx_04fe188b\" exists on \"JourneyModule\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"JourneyModule_moduleId_idx_04fe188b\"",
+          "i",
+          "I",
+          "\"public\".\"JourneyModule\"",
+          "btree",
+          "[\"moduleId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Module.Module_primaryVirtueId_idx_e584541b",
+    "label": "Create index \"Module_primaryVirtueId_idx_e584541b\" on \"Module\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Module_primaryVirtueId_idx_e584541b",
+        "table": "Module"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Module_primaryVirtueId_idx_e584541b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Module_primaryVirtueId_idx_e584541b\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"Module_primaryVirtueId_idx_e584541b\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Module_primaryVirtueId_idx_e584541b\"",
+        "sql": "CREATE INDEX \"Module_primaryVirtueId_idx_e584541b\" ON \"public\".\"Module\" (\"primaryVirtueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Module_primaryVirtueId_idx_e584541b\" exists on \"Module\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"Module_primaryVirtueId_idx_e584541b\"",
+          "i",
+          "I",
+          "\"public\".\"Module\"",
+          "btree",
+          "[\"primaryVirtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ModuleProgress.ModuleProgress_moduleId_idx_04fe188b",
+    "label": "Create index \"ModuleProgress_moduleId_idx_04fe188b\" on \"ModuleProgress\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ModuleProgress_moduleId_idx_04fe188b",
+        "table": "ModuleProgress"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ModuleProgress_moduleId_idx_04fe188b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleProgress_moduleId_idx_04fe188b\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"ModuleProgress_moduleId_idx_04fe188b\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ModuleProgress_moduleId_idx_04fe188b\"",
+        "sql": "CREATE INDEX \"ModuleProgress_moduleId_idx_04fe188b\" ON \"public\".\"ModuleProgress\" (\"moduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ModuleProgress_moduleId_idx_04fe188b\" exists on \"ModuleProgress\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleProgress_moduleId_idx_04fe188b\"",
+          "i",
+          "I",
+          "\"public\".\"ModuleProgress\"",
+          "btree",
+          "[\"moduleId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ModuleProgress.ModuleProgress_userId_idx_a489d58a",
+    "label": "Create index \"ModuleProgress_userId_idx_a489d58a\" on \"ModuleProgress\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ModuleProgress_userId_idx_a489d58a",
+        "table": "ModuleProgress"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ModuleProgress_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleProgress_userId_idx_a489d58a\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"ModuleProgress_userId_idx_a489d58a\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ModuleProgress_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"ModuleProgress_userId_idx_a489d58a\" ON \"public\".\"ModuleProgress\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ModuleProgress_userId_idx_a489d58a\" exists on \"ModuleProgress\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleProgress_userId_idx_a489d58a\"",
+          "i",
+          "I",
+          "\"public\".\"ModuleProgress\"",
+          "btree",
+          "[\"userId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ModuleSecondaryVirtue.ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278",
+    "label": "Create index \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\" on \"ModuleSecondaryVirtue\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278",
+        "table": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\"",
+        "sql": "CREATE INDEX \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\" ON \"public\".\"ModuleSecondaryVirtue\" (\"moduleId\", \"primaryVirtueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\" exists on \"ModuleSecondaryVirtue\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278\"",
+          "i",
+          "I",
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "btree",
+          "[\"moduleId\",\"primaryVirtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ModuleSecondaryVirtue.ModuleSecondaryVirtue_virtueId_idx_e138c4cd",
+    "label": "Create index \"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\" on \"ModuleSecondaryVirtue\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ModuleSecondaryVirtue_virtueId_idx_e138c4cd",
+        "table": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\"",
+        "sql": "CREATE INDEX \"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\" ON \"public\".\"ModuleSecondaryVirtue\" (\"virtueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\" exists on \"ModuleSecondaryVirtue\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"ModuleSecondaryVirtue_virtueId_idx_e138c4cd\"",
+          "i",
+          "I",
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "btree",
+          "[\"virtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.OptionVirtueWeight.OptionVirtueWeight_optionId_idx_b1d5fce5",
+    "label": "Create index \"OptionVirtueWeight_optionId_idx_b1d5fce5\" on \"OptionVirtueWeight\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "OptionVirtueWeight_optionId_idx_b1d5fce5",
+        "table": "OptionVirtueWeight"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"OptionVirtueWeight_optionId_idx_b1d5fce5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"OptionVirtueWeight_optionId_idx_b1d5fce5\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"OptionVirtueWeight_optionId_idx_b1d5fce5\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"OptionVirtueWeight_optionId_idx_b1d5fce5\"",
+        "sql": "CREATE INDEX \"OptionVirtueWeight_optionId_idx_b1d5fce5\" ON \"public\".\"OptionVirtueWeight\" (\"optionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"OptionVirtueWeight_optionId_idx_b1d5fce5\" exists on \"OptionVirtueWeight\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"OptionVirtueWeight_optionId_idx_b1d5fce5\"",
+          "i",
+          "I",
+          "\"public\".\"OptionVirtueWeight\"",
+          "btree",
+          "[\"optionId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.OptionVirtueWeight.OptionVirtueWeight_virtueId_idx_e138c4cd",
+    "label": "Create index \"OptionVirtueWeight_virtueId_idx_e138c4cd\" on \"OptionVirtueWeight\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "OptionVirtueWeight_virtueId_idx_e138c4cd",
+        "table": "OptionVirtueWeight"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"OptionVirtueWeight_virtueId_idx_e138c4cd\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"OptionVirtueWeight_virtueId_idx_e138c4cd\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"OptionVirtueWeight_virtueId_idx_e138c4cd\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"OptionVirtueWeight_virtueId_idx_e138c4cd\"",
+        "sql": "CREATE INDEX \"OptionVirtueWeight_virtueId_idx_e138c4cd\" ON \"public\".\"OptionVirtueWeight\" (\"virtueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"OptionVirtueWeight_virtueId_idx_e138c4cd\" exists on \"OptionVirtueWeight\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"OptionVirtueWeight_virtueId_idx_e138c4cd\"",
+          "i",
+          "I",
+          "\"public\".\"OptionVirtueWeight\"",
+          "btree",
+          "[\"virtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.VirtueRating.VirtueRating_studentId_idx_bf255322",
+    "label": "Create index \"VirtueRating_studentId_idx_bf255322\" on \"VirtueRating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "VirtueRating_studentId_idx_bf255322",
+        "table": "VirtueRating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"VirtueRating_studentId_idx_bf255322\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating_studentId_idx_bf255322\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"VirtueRating_studentId_idx_bf255322\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"VirtueRating_studentId_idx_bf255322\"",
+        "sql": "CREATE INDEX \"VirtueRating_studentId_idx_bf255322\" ON \"public\".\"VirtueRating\" (\"studentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"VirtueRating_studentId_idx_bf255322\" exists on \"VirtueRating\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating_studentId_idx_bf255322\"",
+          "i",
+          "I",
+          "\"public\".\"VirtueRating\"",
+          "btree",
+          "[\"studentId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.VirtueRating.VirtueRating_studentId_raterKind_idx_d2c3d7bb",
+    "label": "Create index \"VirtueRating_studentId_raterKind_idx_d2c3d7bb\" on \"VirtueRating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "VirtueRating_studentId_raterKind_idx_d2c3d7bb",
+        "table": "VirtueRating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"VirtueRating_studentId_raterKind_idx_d2c3d7bb\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating_studentId_raterKind_idx_d2c3d7bb\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"VirtueRating_studentId_raterKind_idx_d2c3d7bb\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"VirtueRating_studentId_raterKind_idx_d2c3d7bb\"",
+        "sql": "CREATE INDEX \"VirtueRating_studentId_raterKind_idx_d2c3d7bb\" ON \"public\".\"VirtueRating\" (\"studentId\", \"raterKind\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"VirtueRating_studentId_raterKind_idx_d2c3d7bb\" exists on \"VirtueRating\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating_studentId_raterKind_idx_d2c3d7bb\"",
+          "i",
+          "I",
+          "\"public\".\"VirtueRating\"",
+          "btree",
+          "[\"studentId\",\"raterKind\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.VirtueRating.VirtueRating_virtueId_idx_e138c4cd",
+    "label": "Create index \"VirtueRating_virtueId_idx_e138c4cd\" on \"VirtueRating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "VirtueRating_virtueId_idx_e138c4cd",
+        "table": "VirtueRating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"VirtueRating_virtueId_idx_e138c4cd\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating_virtueId_idx_e138c4cd\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"VirtueRating_virtueId_idx_e138c4cd\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"VirtueRating_virtueId_idx_e138c4cd\"",
+        "sql": "CREATE INDEX \"VirtueRating_virtueId_idx_e138c4cd\" ON \"public\".\"VirtueRating\" (\"virtueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"VirtueRating_virtueId_idx_e138c4cd\" exists on \"VirtueRating\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"VirtueRating_virtueId_idx_e138c4cd\"",
+          "i",
+          "I",
+          "\"public\".\"VirtueRating\"",
+          "btree",
+          "[\"virtueId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Journey.Journey_focusVirtueId_fkey",
+    "label": "Add foreign key \"Journey_focusVirtueId_fkey\" on \"Journey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Journey_focusVirtueId_fkey",
+        "table": "Journey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Journey_focusVirtueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Journey_focusVirtueId_fkey",
+          "public",
+          "\"public\".\"Journey\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"Journey_focusVirtueId_fkey\" on \"Journey\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Journey_focusVirtueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Journey\"\nADD CONSTRAINT \"Journey_focusVirtueId_fkey\"\nFOREIGN KEY (\"focusVirtueId\")\nREFERENCES \"public\".\"Virtue\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Journey_focusVirtueId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "Journey_focusVirtueId_fkey",
+          "public",
+          "\"public\".\"Journey\"",
+          "f",
+          "[\"focusVirtueId\"]",
+          "\"public\".\"Virtue\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.JourneyModule.JourneyModule_journeyId_fkey",
+    "label": "Add foreign key \"JourneyModule_journeyId_fkey\" on \"JourneyModule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "JourneyModule_journeyId_fkey",
+        "table": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"JourneyModule_journeyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "JourneyModule_journeyId_fkey",
+          "public",
+          "\"public\".\"JourneyModule\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"JourneyModule_journeyId_fkey\" on \"JourneyModule\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"JourneyModule_journeyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"JourneyModule\"\nADD CONSTRAINT \"JourneyModule_journeyId_fkey\"\nFOREIGN KEY (\"journeyId\")\nREFERENCES \"public\".\"Journey\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"JourneyModule_journeyId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "JourneyModule_journeyId_fkey",
+          "public",
+          "\"public\".\"JourneyModule\"",
+          "f",
+          "[\"journeyId\"]",
+          "\"public\".\"Journey\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.JourneyModule.JourneyModule_moduleId_fkey",
+    "label": "Add foreign key \"JourneyModule_moduleId_fkey\" on \"JourneyModule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "JourneyModule_moduleId_fkey",
+        "table": "JourneyModule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"JourneyModule_moduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "JourneyModule_moduleId_fkey",
+          "public",
+          "\"public\".\"JourneyModule\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"JourneyModule_moduleId_fkey\" on \"JourneyModule\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"JourneyModule_moduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"JourneyModule\"\nADD CONSTRAINT \"JourneyModule_moduleId_fkey\"\nFOREIGN KEY (\"moduleId\")\nREFERENCES \"public\".\"Module\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"JourneyModule_moduleId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "JourneyModule_moduleId_fkey",
+          "public",
+          "\"public\".\"JourneyModule\"",
+          "f",
+          "[\"moduleId\"]",
+          "\"public\".\"Module\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Module.Module_videoId_fkey",
+    "label": "Add foreign key \"Module_videoId_fkey\" on \"Module\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Module_videoId_fkey",
+        "table": "Module"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Module_videoId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Module_videoId_fkey",
+          "public",
+          "\"public\".\"Module\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"Module_videoId_fkey\" on \"Module\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Module_videoId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Module\"\nADD CONSTRAINT \"Module_videoId_fkey\"\nFOREIGN KEY (\"videoId\")\nREFERENCES \"public\".\"Video\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Module_videoId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "Module_videoId_fkey",
+          "public",
+          "\"public\".\"Module\"",
+          "f",
+          "[\"videoId\"]",
+          "\"public\".\"Video\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Module.Module_primaryVirtueId_fkey",
+    "label": "Add foreign key \"Module_primaryVirtueId_fkey\" on \"Module\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Module_primaryVirtueId_fkey",
+        "table": "Module"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Module_primaryVirtueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Module_primaryVirtueId_fkey",
+          "public",
+          "\"public\".\"Module\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"Module_primaryVirtueId_fkey\" on \"Module\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Module_primaryVirtueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Module\"\nADD CONSTRAINT \"Module_primaryVirtueId_fkey\"\nFOREIGN KEY (\"primaryVirtueId\")\nREFERENCES \"public\".\"Virtue\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Module_primaryVirtueId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "Module_primaryVirtueId_fkey",
+          "public",
+          "\"public\".\"Module\"",
+          "f",
+          "[\"primaryVirtueId\"]",
+          "\"public\".\"Virtue\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ModuleProgress.ModuleProgress_userId_fkey",
+    "label": "Add foreign key \"ModuleProgress_userId_fkey\" on \"ModuleProgress\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ModuleProgress_userId_fkey",
+        "table": "ModuleProgress"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ModuleProgress_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleProgress_userId_fkey",
+          "public",
+          "\"public\".\"ModuleProgress\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"ModuleProgress_userId_fkey\" on \"ModuleProgress\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ModuleProgress_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleProgress\"\nADD CONSTRAINT \"ModuleProgress_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ModuleProgress_userId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ModuleProgress_userId_fkey",
+          "public",
+          "\"public\".\"ModuleProgress\"",
+          "f",
+          "[\"userId\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ModuleProgress.ModuleProgress_moduleId_fkey",
+    "label": "Add foreign key \"ModuleProgress_moduleId_fkey\" on \"ModuleProgress\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ModuleProgress_moduleId_fkey",
+        "table": "ModuleProgress"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ModuleProgress_moduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleProgress_moduleId_fkey",
+          "public",
+          "\"public\".\"ModuleProgress\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"ModuleProgress_moduleId_fkey\" on \"ModuleProgress\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ModuleProgress_moduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleProgress\"\nADD CONSTRAINT \"ModuleProgress_moduleId_fkey\"\nFOREIGN KEY (\"moduleId\")\nREFERENCES \"public\".\"Module\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ModuleProgress_moduleId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ModuleProgress_moduleId_fkey",
+          "public",
+          "\"public\".\"ModuleProgress\"",
+          "f",
+          "[\"moduleId\"]",
+          "\"public\".\"Module\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ModuleSecondaryVirtue.ModuleSecondaryVirtue_virtueId_fkey",
+    "label": "Add foreign key \"ModuleSecondaryVirtue_virtueId_fkey\" on \"ModuleSecondaryVirtue\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ModuleSecondaryVirtue_virtueId_fkey",
+        "table": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ModuleSecondaryVirtue_virtueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_virtueId_fkey",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"ModuleSecondaryVirtue_virtueId_fkey\" on \"ModuleSecondaryVirtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ModuleSecondaryVirtue_virtueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleSecondaryVirtue\"\nADD CONSTRAINT \"ModuleSecondaryVirtue_virtueId_fkey\"\nFOREIGN KEY (\"virtueId\")\nREFERENCES \"public\".\"Virtue\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ModuleSecondaryVirtue_virtueId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_virtueId_fkey",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "f",
+          "[\"virtueId\"]",
+          "\"public\".\"Virtue\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ModuleSecondaryVirtue.ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey",
+    "label": "Add foreign key \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey\" on \"ModuleSecondaryVirtue\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey",
+        "table": "ModuleSecondaryVirtue"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey\" on \"ModuleSecondaryVirtue\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ModuleSecondaryVirtue\"\nADD CONSTRAINT \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey\"\nFOREIGN KEY (\"moduleId\", \"primaryVirtueId\")\nREFERENCES \"public\".\"Module\" (\"id\", \"primaryVirtueId\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ModuleSecondaryVirtue_moduleId_primaryVirtueId_fkey",
+          "public",
+          "\"public\".\"ModuleSecondaryVirtue\"",
+          "f",
+          "[\"moduleId\",\"primaryVirtueId\"]",
+          "\"public\".\"Module\"",
+          "[\"id\",\"primaryVirtueId\"]",
+          "c",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.OptionVirtueWeight.OptionVirtueWeight_optionId_fkey",
+    "label": "Add foreign key \"OptionVirtueWeight_optionId_fkey\" on \"OptionVirtueWeight\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "OptionVirtueWeight_optionId_fkey",
+        "table": "OptionVirtueWeight"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"OptionVirtueWeight_optionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "OptionVirtueWeight_optionId_fkey",
+          "public",
+          "\"public\".\"OptionVirtueWeight\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"OptionVirtueWeight_optionId_fkey\" on \"OptionVirtueWeight\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"OptionVirtueWeight_optionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"OptionVirtueWeight\"\nADD CONSTRAINT \"OptionVirtueWeight_optionId_fkey\"\nFOREIGN KEY (\"optionId\")\nREFERENCES \"public\".\"InteractionOption\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"OptionVirtueWeight_optionId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "OptionVirtueWeight_optionId_fkey",
+          "public",
+          "\"public\".\"OptionVirtueWeight\"",
+          "f",
+          "[\"optionId\"]",
+          "\"public\".\"InteractionOption\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.OptionVirtueWeight.OptionVirtueWeight_virtueId_fkey",
+    "label": "Add foreign key \"OptionVirtueWeight_virtueId_fkey\" on \"OptionVirtueWeight\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "OptionVirtueWeight_virtueId_fkey",
+        "table": "OptionVirtueWeight"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"OptionVirtueWeight_virtueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "OptionVirtueWeight_virtueId_fkey",
+          "public",
+          "\"public\".\"OptionVirtueWeight\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"OptionVirtueWeight_virtueId_fkey\" on \"OptionVirtueWeight\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"OptionVirtueWeight_virtueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"OptionVirtueWeight\"\nADD CONSTRAINT \"OptionVirtueWeight_virtueId_fkey\"\nFOREIGN KEY (\"virtueId\")\nREFERENCES \"public\".\"Virtue\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"OptionVirtueWeight_virtueId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "OptionVirtueWeight_virtueId_fkey",
+          "public",
+          "\"public\".\"OptionVirtueWeight\"",
+          "f",
+          "[\"virtueId\"]",
+          "\"public\".\"Virtue\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.VirtueRating.VirtueRating_studentId_fkey",
+    "label": "Add foreign key \"VirtueRating_studentId_fkey\" on \"VirtueRating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "VirtueRating_studentId_fkey",
+        "table": "VirtueRating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"VirtueRating_studentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "VirtueRating_studentId_fkey",
+          "public",
+          "\"public\".\"VirtueRating\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"VirtueRating_studentId_fkey\" on \"VirtueRating\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"VirtueRating_studentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"VirtueRating\"\nADD CONSTRAINT \"VirtueRating_studentId_fkey\"\nFOREIGN KEY (\"studentId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"VirtueRating_studentId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "VirtueRating_studentId_fkey",
+          "public",
+          "\"public\".\"VirtueRating\"",
+          "f",
+          "[\"studentId\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.VirtueRating.VirtueRating_virtueId_fkey",
+    "label": "Add foreign key \"VirtueRating_virtueId_fkey\" on \"VirtueRating\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "VirtueRating_virtueId_fkey",
+        "table": "VirtueRating"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"VirtueRating_virtueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "VirtueRating_virtueId_fkey",
+          "public",
+          "\"public\".\"VirtueRating\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"VirtueRating_virtueId_fkey\" on \"VirtueRating\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"VirtueRating_virtueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"VirtueRating\"\nADD CONSTRAINT \"VirtueRating_virtueId_fkey\"\nFOREIGN KEY (\"virtueId\")\nREFERENCES \"public\".\"Virtue\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"VirtueRating_virtueId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "VirtueRating_virtueId_fkey",
+          "public",
+          "\"public\".\"VirtueRating\"",
+          "f",
+          "[\"virtueId\"]",
+          "\"public\".\"Virtue\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  }
+]

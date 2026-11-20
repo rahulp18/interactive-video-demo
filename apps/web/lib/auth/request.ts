@@ -1,6 +1,7 @@
 import { AuthError } from "./errors";
 import { extractCredential } from "./http";
 import { authenticate } from "./service";
+import type { UserRole } from "./roles";
 import type { SessionUser } from "./session";
 
 /** For protected routes: resolves the caller from the request's credentials only, never from client-supplied IDs. */
@@ -8,6 +9,13 @@ export async function requireUser(request: Request): Promise<{ user: SessionUser
   const credential = extractCredential(request);
   if (!credential) throw new AuthError("UNAUTHENTICATED", "Authentication required.");
   return { user: await authenticate(credential.token), token: credential.token };
+}
+
+/** For role-restricted routes: like `requireUser`, but a signed-in caller of another role gets 403 FORBIDDEN. */
+export async function requireRole(request: Request, role: UserRole): Promise<{ user: SessionUser; token: string }> {
+  const caller = await requireUser(request);
+  if (caller.user.role !== role) throw new AuthError("FORBIDDEN", "You do not have access to this.");
+  return caller;
 }
 
 /** For endpoints open to everyone that behave better for a signed-in caller: the user, or null for anonymous/invalid credentials. */

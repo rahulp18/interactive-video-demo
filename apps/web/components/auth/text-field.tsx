@@ -4,11 +4,12 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 type TextFieldProps = ComponentProps<"input"> & { id: string; label: string; error?: string; hint?: string };
 
 /** Label + input + hint/error wired together for accessibility; password inputs get a show/hide toggle. */
-export function TextField({ id, label, error, hint, type, ...input }: TextFieldProps) {
+export function TextField({ id, label, error, hint, type, className, ...input }: TextFieldProps) {
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === "password";
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
@@ -22,7 +23,8 @@ export function TextField({ id, label, error, hint, type, ...input }: TextFieldP
           type={isPassword && revealed ? "text" : type}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={isPassword ? "pr-9" : undefined}
+          // Child-friendly 48px touch target, rounded to match the PARICHAY theme.
+          className={cn("h-13 rounded-2xl border-2 bg-background px-4 text-lg font-semibold md:text-lg", isPassword && "pr-12", className)}
           {...input}
         />
         {isPassword && (
@@ -31,9 +33,9 @@ export function TextField({ id, label, error, hint, type, ...input }: TextFieldP
             onClick={() => setRevealed((v) => !v)}
             aria-label={revealed ? "Hide password" : "Show password"}
             aria-pressed={revealed}
-            className="absolute inset-y-0 right-0 flex w-9 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
           >
-            {revealed ? <EyeOffIcon className="size-4" aria-hidden /> : <EyeIcon className="size-4" aria-hidden />}
+            {revealed ? <EyeOffIcon className="size-5" aria-hidden /> : <EyeIcon className="size-5" aria-hidden />}
           </button>
         )}
       </div>

@@ -25,10 +25,6 @@ async function request<T>(method: string, path: string, data?: unknown): Promise
 export const videosApi = {
   rename: (videoId: number, title: string) => request<{ video: { title: string } }>("PATCH", `/api/videos/${videoId}`, { title }),
   remove: (videoId: number) => request<{ ok: true }>("DELETE", `/api/videos/${videoId}`),
-  enableShare: (videoId: number) => request<{ shareId: string }>("PUT", `/api/videos/${videoId}/share`).then((r) => r.shareId),
-  disableShare: (videoId: number) => request<{ ok: true }>("DELETE", `/api/videos/${videoId}/share`),
-  setListed: (videoId: number, listed: boolean) =>
-    request<{ shareId: string | null; isListed: boolean }>("PUT", `/api/videos/${videoId}/listing`, { listed }),
   createInteraction: (videoId: number, input: unknown) =>
     request<{ interaction: InteractionDTO }>("POST", `/api/videos/${videoId}/interactions`, input).then((r) => r.interaction),
   updateInteraction: (videoId: number, id: number, input: unknown) =>

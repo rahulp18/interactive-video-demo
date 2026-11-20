@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Interactive Video",
-  description: "Videos with timed surveys and quizzes.",
+  title: { default: "PARICHAY", template: "%s | PARICHAY" },
+  description: "Learn by watching interactive videos that pause for quizzes and surveys.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -17,8 +17,9 @@ export async function registerUser(input: RegisterInput): Promise<SessionUser> {
 
   const password = await hashPassword(input.password);
   try {
-    const user = await db.orm.public.User.create({ name: input.name, email: input.email, password });
-    return { id: user.id, name: user.name, email: user.email };
+    // Public registration only ever creates students: the role is set here, never read from the request.
+    const user = await db.orm.public.User.create({ name: input.name, email: input.email, password, role: "STUDENT" });
+    return { id: user.id, name: user.name, email: user.email, role: user.role };
   } catch (error) {
     if (isUniqueViolation(error)) throw new AuthError("EMAIL_TAKEN", "An account with this email already exists.");
     throw error;
@@ -41,7 +42,7 @@ export async function loginUser(
 
   if (previousToken) await revokeSession(previousToken);
   const session = await createSession(account.id);
-  return { user: { id: account.id, name: account.name, email: account.email }, session };
+  return { user: { id: account.id, name: account.name, email: account.email, role: account.role }, session };
 }
 
 export async function authenticate(token: string): Promise<SessionUser> {

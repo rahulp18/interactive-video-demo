@@ -4,9 +4,9 @@ import { Suspense } from "react";
 import { VideoEditor } from "@/components/editor/VideoEditor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthError } from "@/lib/auth/errors";
-import { requireCurrentUser } from "@/lib/auth/server";
+import { requireTeacher } from "@/lib/auth/server";
 import { isInteractionType } from "@/lib/interactions/model";
-import { listVideoInteractions } from "@/lib/interactions/service";
+import { getEditorModule, listVideoInteractions } from "@/lib/interactions/service";
 import { getVideo } from "@/lib/videos/service";
 
 export const metadata: Metadata = { title: "Video editor" };
@@ -24,7 +24,7 @@ export default function VideoEditorPage({ params, searchParams }: Props) {
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 async function Editor({ params, searchParams }: Pick<Props, "params" | "searchParams">) {
-  const user = await requireCurrentUser();
+  const user = await requireTeacher();
   const { id: rawId } = await params;
   const query = await searchParams;
 
@@ -35,7 +35,8 @@ async function Editor({ params, searchParams }: Pick<Props, "params" | "searchPa
   try {
     // Both reads are scoped to the signed-in user; someone else's video is indistinguishable from a missing one.
     const video = await getVideo(user.id, id);
-    loaded = { video, interactions: await listVideoInteractions(user.id, id) };
+    const [interactions, storyModule] = await Promise.all([listVideoInteractions(user.id, id), getEditorModule(user.id, id)]);
+    loaded = { video, interactions, storyModule };
   } catch (error) {
     if (error instanceof AuthError && error.code === "NOT_FOUND") notFound();
     throw error;
@@ -46,8 +47,9 @@ async function Editor({ params, searchParams }: Pick<Props, "params" | "searchPa
   const time = Number(first(query.t));
   return (
     <VideoEditor
-      video={{ id: loaded.video.id, title: loaded.video.title, fileUrl: loaded.video.fileUrl, duration: loaded.video.duration, shareId: loaded.video.shareId, isListed: loaded.video.isListed }}
+      video={{ id: loaded.video.id, title: loaded.video.title, fileUrl: loaded.video.fileUrl, duration: loaded.video.duration }}
       initialInteractions={loaded.interactions}
+      storyModule={loaded.storyModule}
       initial={{
         editId: edit && /^\d+$/.test(edit) ? Number(edit) : undefined,
         newType: isInteractionType(newType) ? newType : undefined,

@@ -1,8 +1,9 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { db } from "@/prisma/db";
 import { SESSION_TTL_MS } from "./config";
+import type { UserRole } from "./roles";
 
-export type SessionUser = { id: number; name: string; email: string };
+export type SessionUser = { id: number; name: string; email: string; role: UserRole };
 export type IssuedSession = { token: string; expiresAt: Date };
 
 export function generateToken(): string {
@@ -37,7 +38,7 @@ export async function validateSession(token: string, now = new Date()): Promise<
   }
 
   const user = await db.orm.public.User.where({ id: session.userId }).first();
-  return user ? { id: user.id, name: user.name, email: user.email } : null;
+  return user ? { id: user.id, name: user.name, email: user.email, role: user.role } : null;
 }
 
 /** Server-side revocation. Idempotent: revoking an unknown token is a no-op. */
