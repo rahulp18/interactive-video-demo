@@ -28,13 +28,14 @@ export async function ensureAccounts(password: string, opts: { syncPasswords?: b
   for (const account of DEMO_ACCOUNTS) {
     const existing = await db.orm.public.User.where({ email: account.email }).first();
     if (!existing) {
-      ids[account.key] = (await db.orm.public.User.create({ name: account.name, email: account.email, role: account.role, password: await hashPassword(password) })).id;
+      ids[account.key] = (await db.orm.public.User.create({ name: account.name, email: account.email, role: account.role, password: await hashPassword(password), avatar: account.avatar ?? null })).id;
       continue;
     }
     ids[account.key] = existing.id;
-    const patch: { name?: string; role?: DemoAccount["role"]; password?: string } = {};
+    const patch: { name?: string; role?: DemoAccount["role"]; password?: string; avatar?: string } = {};
     if (existing.name !== account.name) patch.name = account.name;
     if (existing.role !== account.role) patch.role = account.role;
+    if (account.avatar && !existing.avatar) patch.avatar = account.avatar; // never overwrite the child's own pick
     // An existing password is only replaced on request: a random-salt re-hash on every run would "change" the row.
     if (opts.syncPasswords && !(await verifyPassword(password, existing.password))) patch.password = await hashPassword(password);
     if (Object.keys(patch).length > 0) await db.orm.public.User.where({ id: existing.id }).updateAll(patch);
@@ -345,6 +346,22 @@ export async function clearStudentHistory(userId: number): Promise<void> {
   await db.orm.public.VirtueRating.where({ studentId: userId }).deleteAll();
 }
 
+/**
+ * demo:reset: the parent preview starts clean. Deletes the access-log rows ABOUT this demo student and closes the
+ * parental gate on their sessions (so the presenter sees the grown-up check again). Sessions themselves stay signed in.
+ */
+export async function clearParentPreviewState(userId: number): Promise<void> {
+  await assertDemoUser(userId);
+  await db.orm.public.AuditLog.where({ subjectId: userId }).deleteAll();
+  await db.orm.public.Session.where({ userId }).updateAll({
+    parentGateUntil: null,
+    parentGateFailures: 0,
+    parentGateLockedUntil: null,
+    parentGateChallenge: null,
+    parentGateAnswer: null,
+  });
+}
+
 export async function hasHistory(userId: number): Promise<boolean> {
   return (await db.orm.public.ModuleProgress.where({ userId }).first()) !== null;
 }
@@ -424,6 +441,7 @@ export async function resetStudent(userId: number, now: Date = new Date()) {
   await assertDemoUser(userId);
   await clearPinLockout([userId]);
   await clearStudentHistory(userId);
+  await clearParentPreviewState(userId);
   return seedStudentHistory(userId, now);
 }
 

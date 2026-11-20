@@ -14,6 +14,8 @@ export type DemoAccount = {
   role: "TEACHER" | "STUDENT";
   /** Student login name (lowercase, 3-20 of a-z 0-9 _). Students only. */
   username?: string;
+  /** Preset avatar key (lib/student/avatars.ts). Given only while the account has none, so a child's own pick is kept. */
+  avatar?: string;
   /** What the account is for in the live demo. */
   purpose: string;
 };
@@ -32,6 +34,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     email: `aarav@${DEMO_EMAIL_DOMAIN}`,
     role: "STUDENT",
     username: "aarav",
+    avatar: "fox",
     purpose: "The demo student (age 10): about four months of history, parent and teacher ratings.",
   },
   {

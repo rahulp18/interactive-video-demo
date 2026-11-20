@@ -1,0 +1,109 @@
+[
+  {
+    "id": "column.public.User.avatar",
+    "label": "Add column \"avatar\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "avatar",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"avatar\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "avatar"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"avatar\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"avatar\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"avatar\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"avatar\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "avatar"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"avatar\" on \"User\""
+        }
+      },
+      {
+        "description": "verify column \"avatar\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "avatar",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.User.user_avatar_format_cc016a5f",
+    "label": "Add check constraint \"user_avatar_format_cc016a5f\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_avatar_format_cc016a5f",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_avatar_format_cc016a5f\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_avatar_format_cc016a5f",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"user_avatar_format_cc016a5f\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_avatar_format_cc016a5f\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"user_avatar_format_cc016a5f\" CHECK (\"avatar\" IS NULL OR \"avatar\" ~ '^[a-z]{3,20}$')"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"user_avatar_format_cc016a5f\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "user_avatar_format_cc016a5f",
+          "public",
+          "\"public\".\"User\"",
+          "c"
+        ]
+      }
+    ]
+  }
+]

@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "AuditLog": {
+      "model": "AuditLog",
+      "namespace": "public"
+    },
     "Interaction": {
       "model": "Interaction",
       "namespace": "public"
@@ -187,6 +191,103 @@
           }
         },
         "models": {
+          "AuditLog": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "actorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "subjectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "actor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "actorId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "subject": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "subjectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "actorId": {
+                  "column": "actorId"
+                },
+                "at": {
+                  "column": "at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "subjectId": {
+                  "column": "subjectId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AuditLog"
+            }
+          },
           "Interaction": {
             "fields": {
               "answerType": {
@@ -539,6 +640,13 @@
                   "kind": "scalar"
                 }
               },
+              "lastRequestId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "replayCount": {
                 "nullable": false,
                 "type": {
@@ -653,6 +761,9 @@
                 },
                 "isSkipped": {
                   "column": "isSkipped"
+                },
+                "lastRequestId": {
+                  "column": "lastRequestId"
                 },
                 "replayCount": {
                   "column": "replayCount"
@@ -1454,6 +1565,47 @@
                   "kind": "scalar"
                 }
               },
+              "parentGateAnswer": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "parentGateChallenge": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "parentGateFailures": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "parentGateLockedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "parentGateUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
               "tokenHash": {
                 "nullable": false,
                 "type": {
@@ -1508,6 +1660,21 @@
                 "id": {
                   "column": "id"
                 },
+                "parentGateAnswer": {
+                  "column": "parentGateAnswer"
+                },
+                "parentGateChallenge": {
+                  "column": "parentGateChallenge"
+                },
+                "parentGateFailures": {
+                  "column": "parentGateFailures"
+                },
+                "parentGateLockedUntil": {
+                  "column": "parentGateLockedUntil"
+                },
+                "parentGateUntil": {
+                  "column": "parentGateUntil"
+                },
                 "tokenHash": {
                   "column": "tokenHash"
                 },
@@ -1524,6 +1691,13 @@
           },
           "User": {
             "fields": {
+              "avatar": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -1618,6 +1792,36 @@
               }
             },
             "relations": {
+              "auditAbout": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "subjectId"
+                  ]
+                },
+                "to": {
+                  "model": "AuditLog",
+                  "namespace": "public"
+                }
+              },
+              "auditActed": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "actorId"
+                  ]
+                },
+                "to": {
+                  "model": "AuditLog",
+                  "namespace": "public"
+                }
+              },
               "moduleProgress": {
                 "cardinality": "1:N",
                 "on": {
@@ -1696,6 +1900,9 @@
             },
             "storage": {
               "fields": {
+                "avatar": {
+                  "column": "avatar"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -2224,6 +2431,128 @@
       "public": {
         "entries": {
           "table": {
+            "AuditLog": {
+              "checks": [
+                {
+                  "expression": "\"action\" IN ('REPORT_VIEW', 'REPORT_PRINT')",
+                  "name": "audit_action_known_e4d09d89",
+                  "prefix": "audit_action_known"
+                }
+              ],
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "actorId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "at": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "subjectId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "AuditLog_actorId_idx_a58f6b4b"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "actorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AuditLog"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "AuditLog_subjectId_idx_84df2a1d"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "subjectId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AuditLog"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "actorId"
+                  ],
+                  "name": "AuditLog_actorId_idx_a58f6b4b",
+                  "prefix": "AuditLog_actorId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "subjectId",
+                    "at"
+                  ],
+                  "name": "AuditLog_subjectId_at_idx_9c90ddf8",
+                  "prefix": "AuditLog_subjectId_at_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "subjectId"
+                  ],
+                  "name": "AuditLog_subjectId_idx_84df2a1d",
+                  "prefix": "AuditLog_subjectId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "Interaction": {
               "checks": [
                 {
@@ -2574,6 +2903,11 @@
                     "value": false
                   },
                   "nullable": false
+                },
+                "lastRequestId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "replayCount": {
                   "codecId": "pg/int4@1",
@@ -3509,6 +3843,13 @@
               ]
             },
             "Session": {
+              "checks": [
+                {
+                  "expression": "\"parentGateFailures\" >= 0",
+                  "name": "session_gate_failures_nonneg_8e8d7760",
+                  "prefix": "session_gate_failures_nonneg"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
@@ -3534,6 +3875,41 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "parentGateAnswer": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "parentGateChallenge": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "parentGateFailures": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nullable": false
+                },
+                "parentGateLockedUntil": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "parentGateUntil": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 3
+                  }
                 },
                 "tokenHash": {
                   "codecId": "pg/text@1",
@@ -3615,6 +3991,11 @@
                   "prefix": "User_role_check"
                 },
                 {
+                  "expression": "\"avatar\" IS NULL OR \"avatar\" ~ '^[a-z]{3,20}$'",
+                  "name": "user_avatar_format_cc016a5f",
+                  "prefix": "user_avatar_format"
+                },
+                {
                   "expression": "\"pinFailedAttempts\" >= 0",
                   "name": "user_pin_attempts_nonneg_b52230ef",
                   "prefix": "user_pin_attempts_nonneg"
@@ -3636,6 +4017,11 @@
                 }
               ],
               "columns": {
+                "avatar": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "dataType": "pg/timestamptz",
@@ -4176,7 +4562,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e918ee1aab6a927861624ad49ab995cda83801c669acead563454c3f4678eabe"
+    "storageHash": "bca3f41b4ac2b0784a1d3b046ec3bcbd195626f89295e93558c660eb86c3bf26"
   },
   "execution": {
     "executionHash": "7a4a51c110b114f8240d997c427c995cd240e6824c7561b96a8b2e984099e71c",

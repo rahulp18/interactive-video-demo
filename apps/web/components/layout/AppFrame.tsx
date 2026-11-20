@@ -5,12 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { AvatarBubble } from "@/components/student/AvatarBubble";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { homePathFor, type UserRole } from "@/lib/auth/roles";
 import { STUDENT_GROWNUPS_LINK, STUDENT_NAV_ITEMS, isItemActive, navGroupsFor, titleFor } from "./nav-items";
 
-type User = { name: string; email: string; role: UserRole };
+type User = { name: string; email: string; role: UserRole; avatar?: string | null };
 
 function BrandMark({ role, rail = false }: { role: UserRole; rail?: boolean }) {
   return (
@@ -32,7 +33,8 @@ function BrandMark({ role, rail = false }: { role: UserRole; rail?: boolean }) {
 
 const initialOf = (name: string) => name.trim().charAt(0).toUpperCase() || "?";
 
-function Avatar({ name }: { name: string }) {
+function Avatar({ name, avatar }: { name: string; avatar?: string | null }) {
+  if (avatar) return <AvatarBubble avatar={avatar} name={name} className="size-9 text-lg" />;
   return (
     <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
       {initialOf(name)}
@@ -112,7 +114,7 @@ function SidebarContent({ user, rail }: { user: User; rail: boolean }) {
                 rail && "max-lg:justify-center",
               )}
             >
-              <Avatar name={user.name} />
+              <Avatar name={user.name} avatar={user.avatar} />
               <span className={cn("min-w-0", rail && "max-lg:sr-only")}>
                 <span className="block truncate text-sm font-medium">{user.name}</span>
               </span>
@@ -120,7 +122,7 @@ function SidebarContent({ user, rail }: { user: User; rail: boolean }) {
           </>
         ) : (
           <div className="flex items-center gap-3 px-1">
-            <Avatar name={user.name} />
+            <Avatar name={user.name} avatar={user.avatar} />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{user.name}</p>
               <p className="truncate text-xs text-muted-foreground">{user.email}</p>
@@ -140,7 +142,7 @@ function StudentTabBar() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-4">
         {STUDENT_NAV_ITEMS.map((item) => {
@@ -203,7 +205,7 @@ export function AppFrame({ user, fontClass, children }: { user: User; fontClass?
     <div className={cn("flex min-h-dvh flex-1", isStudent && fontClass)} data-audience={isStudent ? "student" : undefined}>
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:block",
+          "sticky top-0 hidden h-dvh shrink-0 print:hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:block",
           isStudent ? "w-16 lg:w-64" : "w-64",
         )}
       >
@@ -229,7 +231,7 @@ export function AppFrame({ user, fontClass, children }: { user: User; fontClass?
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className={cn("sticky top-0 z-30 flex items-center gap-3 border-b bg-background/90 px-4 backdrop-blur sm:px-6", isStudent ? "h-16" : "h-14")}>
+        <header className={cn("sticky top-0 z-30 flex items-center gap-3 print:hidden border-b bg-background/90 px-4 backdrop-blur sm:px-6", isStudent ? "h-16" : "h-14")}>
           <button
             type="button"
             aria-label="Open navigation"

@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e918ee1aab6a927861624ad49ab995cda83801c669acead563454c3f4678eabe'>;
+  StorageHashBase<'bca3f41b4ac2b0784a1d3b046ec3bcbd195626f89295e93558c660eb86c3bf26'>;
 export type ExecutionHash =
   ExecutionHashBase<'7a4a51c110b114f8240d997c427c995cd240e6824c7561b96a8b2e984099e71c'>;
 export type ProfileHash =
@@ -385,6 +385,16 @@ export type StorageColumnInputTypes = ColumnTypesFromStorage<
 >;
 
 export namespace Models {
+  export type public_AuditLog = {
+    action: FieldOutputTypes['public']['AuditLog']['action'];
+    actorId: FieldOutputTypes['public']['AuditLog']['actorId'];
+    at: FieldOutputTypes['public']['AuditLog']['at'];
+    id: FieldOutputTypes['public']['AuditLog']['id'];
+    subjectId: FieldOutputTypes['public']['AuditLog']['subjectId'];
+    actor: public_User;
+    subject: public_User;
+    readonly [RelationKeys]?: 'actor' | 'subject';
+  };
   export type public_Interaction = {
     answerType: FieldOutputTypes['public']['Interaction']['answerType'];
     correctAnswer: FieldOutputTypes['public']['Interaction']['correctAnswer'];
@@ -420,6 +430,7 @@ export namespace Models {
     id: FieldOutputTypes['public']['InteractionResponse']['id'];
     interactionId: FieldOutputTypes['public']['InteractionResponse']['interactionId'];
     isSkipped: FieldOutputTypes['public']['InteractionResponse']['isSkipped'];
+    lastRequestId: FieldOutputTypes['public']['InteractionResponse']['lastRequestId'];
     replayCount: FieldOutputTypes['public']['InteractionResponse']['replayCount'];
     responseTimeMs: FieldOutputTypes['public']['InteractionResponse']['responseTimeMs'];
     selectedOptionId: FieldOutputTypes['public']['InteractionResponse']['selectedOptionId'];
@@ -509,6 +520,11 @@ export namespace Models {
     createdAt: FieldOutputTypes['public']['Session']['createdAt'];
     expiresAt: FieldOutputTypes['public']['Session']['expiresAt'];
     id: FieldOutputTypes['public']['Session']['id'];
+    parentGateAnswer: FieldOutputTypes['public']['Session']['parentGateAnswer'];
+    parentGateChallenge: FieldOutputTypes['public']['Session']['parentGateChallenge'];
+    parentGateFailures: FieldOutputTypes['public']['Session']['parentGateFailures'];
+    parentGateLockedUntil: FieldOutputTypes['public']['Session']['parentGateLockedUntil'];
+    parentGateUntil: FieldOutputTypes['public']['Session']['parentGateUntil'];
     tokenHash: FieldOutputTypes['public']['Session']['tokenHash'];
     updatedAt: FieldOutputTypes['public']['Session']['updatedAt'];
     userId: FieldOutputTypes['public']['Session']['userId'];
@@ -516,6 +532,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'user';
   };
   export type public_User = {
+    avatar: FieldOutputTypes['public']['User']['avatar'];
     createdAt: FieldOutputTypes['public']['User']['createdAt'];
     email: FieldOutputTypes['public']['User']['email'];
     id: FieldOutputTypes['public']['User']['id'];
@@ -527,12 +544,21 @@ export namespace Models {
     role: FieldOutputTypes['public']['User']['role'];
     updatedAt: FieldOutputTypes['public']['User']['updatedAt'];
     username: FieldOutputTypes['public']['User']['username'];
+    auditAbout: public_AuditLog[];
+    auditActed: public_AuditLog[];
     moduleProgress: public_ModuleProgress[];
     ratings: public_VirtueRating[];
     responses: public_InteractionResponse[];
     sessions: public_Session[];
     videos: public_Video[];
-    readonly [RelationKeys]?: 'moduleProgress' | 'ratings' | 'responses' | 'sessions' | 'videos';
+    readonly [RelationKeys]?:
+      | 'auditAbout'
+      | 'auditActed'
+      | 'moduleProgress'
+      | 'ratings'
+      | 'responses'
+      | 'sessions'
+      | 'videos';
   };
   export type public_Video = {
     createdAt: FieldOutputTypes['public']['Video']['createdAt'];
@@ -585,6 +611,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AuditLog: Models.public_AuditLog;
     Interaction: Models.public_Interaction;
     InteractionOption: Models.public_InteractionOption;
     InteractionResponse: Models.public_InteractionResponse;
@@ -620,6 +647,94 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly AuditLog: {
+              columns: {
+                readonly action: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly actorId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly at: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly subjectId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'AuditLog_actorId_idx_a58f6b4b';
+                  readonly prefix: 'AuditLog_actorId_idx';
+                  readonly columns: readonly ['actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AuditLog_subjectId_at_idx_9c90ddf8';
+                  readonly prefix: 'AuditLog_subjectId_at_idx';
+                  readonly columns: readonly ['subjectId', 'at'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AuditLog_subjectId_idx_84df2a1d';
+                  readonly prefix: 'AuditLog_subjectId_idx';
+                  readonly columns: readonly ['subjectId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'AuditLog';
+                    readonly columns: readonly ['actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'AuditLog';
+                    readonly columns: readonly ['subjectId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly Interaction: {
               columns: {
                 readonly answerType: {
@@ -864,6 +979,12 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
+                  readonly many: false;
+                };
+                readonly lastRequestId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly replayCount: {
@@ -1554,6 +1675,42 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly parentGateAnswer: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly parentGateChallenge: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly parentGateFailures: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly parentGateLockedUntil: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly parentGateUntil: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
                 readonly tokenHash: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -1607,6 +1764,12 @@ type ContractBase = Omit<
             };
             readonly User: {
               columns: {
+                readonly avatar: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -2028,6 +2191,7 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly AuditLog: { readonly namespace: 'public' & NamespaceId; readonly model: 'AuditLog' };
     readonly Interaction: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Interaction';
@@ -2071,6 +2235,65 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AuditLog: {
+            readonly fields: {
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly at: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly subjectId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['actorId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly subject: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['subjectId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'AuditLog';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly action: { readonly column: 'action' };
+                readonly actorId: { readonly column: 'actorId' };
+                readonly at: { readonly column: 'at' };
+                readonly id: { readonly column: 'id' };
+                readonly subjectId: { readonly column: 'subjectId' };
+              };
+            };
+          };
           readonly Interaction: {
             readonly fields: {
               readonly answerType: {
@@ -2282,6 +2505,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
               };
+              readonly lastRequestId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly replayCount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -2355,6 +2582,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly interactionId: { readonly column: 'interactionId' };
                 readonly isSkipped: { readonly column: 'isSkipped' };
+                readonly lastRequestId: { readonly column: 'lastRequestId' };
                 readonly replayCount: { readonly column: 'replayCount' };
                 readonly responseTimeMs: { readonly column: 'responseTimeMs' };
                 readonly selectedOptionId: { readonly column: 'selectedOptionId' };
@@ -2860,6 +3088,34 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly parentGateAnswer: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly parentGateChallenge: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly parentGateFailures: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly parentGateLockedUntil: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly parentGateUntil: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
               readonly tokenHash: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2895,6 +3151,11 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly expiresAt: { readonly column: 'expiresAt' };
                 readonly id: { readonly column: 'id' };
+                readonly parentGateAnswer: { readonly column: 'parentGateAnswer' };
+                readonly parentGateChallenge: { readonly column: 'parentGateChallenge' };
+                readonly parentGateFailures: { readonly column: 'parentGateFailures' };
+                readonly parentGateLockedUntil: { readonly column: 'parentGateLockedUntil' };
+                readonly parentGateUntil: { readonly column: 'parentGateUntil' };
                 readonly tokenHash: { readonly column: 'tokenHash' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
@@ -2903,6 +3164,10 @@ type ContractBase = Omit<
           };
           readonly User: {
             readonly fields: {
+              readonly avatar: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -2961,6 +3226,28 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly auditAbout: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AuditLog';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['subjectId'];
+                };
+              };
+              readonly auditActed: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AuditLog';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['actorId'];
+                };
+              };
               readonly moduleProgress: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3021,6 +3308,7 @@ type ContractBase = Omit<
               readonly table: 'User';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly avatar: { readonly column: 'avatar' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly email: { readonly column: 'email' };
                 readonly id: { readonly column: 'id' };

@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireCurrentUser } from "@/lib/auth/server";
+import { db } from "@/prisma/db";
 import { studentFont } from "@/components/student/student-font";
 import { AppFrame } from "./AppFrame";
 
 /** Reads the session on the server and redirects to /login when it is missing, expired or revoked. */
 export async function AppShell({ children }: { children: ReactNode }) {
   const user = await requireCurrentUser();
+  // Students only: the avatar they picked (one small read; never cached, it changes the moment they pick another).
+  const avatar = user.role === "STUDENT" ? ((await db.orm.public.User.where({ id: user.id }).first())?.avatar ?? null) : null;
   return (
     <AppFrame
-      user={{ name: user.name, email: user.email, role: user.role }}
+      user={{ name: user.name, email: user.email, role: user.role, avatar }}
       fontClass={user.role === "STUDENT" ? studentFont.variable : undefined}
     >
       {children}

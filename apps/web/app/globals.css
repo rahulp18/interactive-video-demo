@@ -162,6 +162,7 @@
   --sidebar-border: oklch(0.89 0.03 75);
   --sidebar-ring: oklch(0.6 0.17 48);
   --student-leaf: oklch(0.5 0.12 155);
+  --student-trunk: oklch(0.42 0.07 60);
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-student), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -195,6 +196,7 @@
   --sidebar-border: oklch(1 0.02 80 / 16%);
   --sidebar-ring: oklch(0.75 0.14 62);
   --student-leaf: oklch(0.78 0.13 155);
+  --student-trunk: oklch(0.62 0.07 65);
 }
 
 /* Child-facing touch targets: at least 48 x 48 px for every control in the student shell (SRS section 3). */
@@ -203,4 +205,92 @@
 }
 [data-audience="student"] :is(button, [role="button"], [data-touch]) {
   min-width: 3rem;
+}
+
+/* Virtue tree: a gentle sway. Switched off for children who ask their device for less motion. */
+@keyframes tree-sway {
+  0%,
+  100% {
+    transform: rotate(-0.8deg);
+  }
+  50% {
+    transform: rotate(0.8deg);
+  }
+}
+.tree-sway {
+  transform-origin: 50% 100%;
+  animation: tree-sway 8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tree-sway {
+    animation: none;
+  }
+}
+
+/*
+ * Parent preview ("For grown-ups"): adult-facing, so it uses the standard neutral tokens instead of the warm student
+ * theme it is rendered inside. Same values as :root / .dark above.
+ */
+.adult-report {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --border: oklch(0.88 0 0);
+  --input: oklch(0.88 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+}
+.dark .adult-report {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.556 0 0);
+}
+
+/* Print / Save as PDF: the shell is hidden with `print:hidden` in AppFrame; here the report itself is tidied. */
+@media print {
+  .adult-report {
+    background: #fff !important;
+    color: #000 !important;
+    --background: #fff;
+    --foreground: #000;
+    --card: #fff;
+    --card-foreground: #000;
+    --muted: #f4f4f4;
+    --muted-foreground: #444;
+    --border: #bbb;
+  }
+  .adult-report .print-avoid-break {
+    break-inside: avoid;
+  }
+  .adult-report .print-page-break {
+    break-before: page;
+  }
+  @page {
+    margin: 14mm;
+  }
 }

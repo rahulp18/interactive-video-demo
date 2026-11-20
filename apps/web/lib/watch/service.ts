@@ -2,7 +2,8 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { db } from "@/prisma/db";
 import { AuthError } from "@/lib/auth/errors";
-import { isUniqueViolation } from "@/lib/auth/service";
+import { recordResponse, retryOnUniqueViolation, type StoredAnswer } from "@/lib/learning/record";
+import type { PresentationStyle } from "@/lib/learning/types";
 import { getVideo } from "@/lib/videos/service";
 import { ANSWER_TEXT_MAX, normalizeAnswer, sortInteractions, type AnswerType, type InteractionType } from "@/lib/interactions/model";
 
@@ -83,26 +84,35 @@ export type PublicInteraction = {
   answerType: AnswerType;
   question: string;
   isSkippable: boolean;
+  /** How the student player draws the question (the `/watch` player ignores it). */
+  presentationStyle: PresentationStyle;
   /** Empty for TEXT interactions. */
   options: { id: number; text: string }[];
 };
 export type PublicVideo = { title: string; fileUrl: string; duration: number; interactions: PublicInteraction[] };
 
-export async function getPublicVideo(shareId: string): Promise<PublicVideo | null> {
-  if (!isShareId(shareId)) return null;
-  const video = await db.orm.public.Video.where({ shareId }).first();
-  if (!video) return null;
-  const rows = await db.orm.public.Interaction.where({ videoId: video.id }).include("options").all();
-  const interactions = sortInteractions(rows).map((i) => ({
+/** The only way an interaction row becomes viewer-facing data: no `isCorrect`, no weights, no correct answer. */
+export function toPublicInteractions(
+  rows: { id: number; timestamp: number; position: number; type: string; answerType: string; question: string; isSkippable: boolean; presentationStyle: string; options: { id: number; text: string; position: number }[] }[],
+): PublicInteraction[] {
+  return sortInteractions(rows).map((i) => ({
     id: i.id,
     timestamp: i.timestamp,
     type: i.type as InteractionType,
     answerType: i.answerType as AnswerType,
     question: i.question,
     isSkippable: i.isSkippable,
+    presentationStyle: i.presentationStyle as PresentationStyle,
     options: [...i.options].sort((a, b) => a.position - b.position).map((o) => ({ id: o.id, text: o.text })),
   }));
-  return { title: video.title, fileUrl: video.fileUrl, duration: video.duration, interactions };
+}
+
+export async function getPublicVideo(shareId: string): Promise<PublicVideo | null> {
+  if (!isShareId(shareId)) return null;
+  const video = await db.orm.public.Video.where({ shareId }).first();
+  if (!video) return null;
+  const rows = await db.orm.public.Interaction.where({ videoId: video.id }).include("options").all();
+  return { title: video.title, fileUrl: video.fileUrl, duration: video.duration, interactions: toPublicInteractions(rows) };
 }
 
 export type AnswerResult =
@@ -127,20 +137,9 @@ export async function checkPublicAnswer(shareId: string, interactionId: number, 
   if (viewerId === null) throw new AuthError("UNAUTHENTICATED", "Sign in to answer questions.");
 
   const raw = typeof body === "object" && body !== null ? (body as { optionId?: unknown; text?: unknown; skip?: unknown }) : {};
-  const store = async (answer: { selectedOptionId: number } | { textAnswer: string } | null) => {
-    const data = {
-      selectedOptionId: answer && "selectedOptionId" in answer ? answer.selectedOptionId : null,
-      textAnswer: answer && "textAnswer" in answer ? answer.textAnswer : null,
-      isSkipped: answer === null,
-    };
-    const replace = () => db.orm.public.InteractionResponse.where({ userId: viewerId, interactionId }).updateAll(data);
-    if (await db.orm.public.InteractionResponse.where({ userId: viewerId, interactionId }).first()) return void (await replace());
-    try {
-      await db.orm.public.InteractionResponse.create({ userId: viewerId, interactionId, ...data });
-    } catch (error) {
-      if (!isUniqueViolation(error)) throw error;
-      await replace(); // concurrent first answer: the latest one wins
-    }
+  // Shared with the student player: latest answer wins, and a re-answer counts one more attempt.
+  const store = async (answer: StoredAnswer) => {
+    await retryOnUniqueViolation(() => recordResponse(db, { userId: viewerId, interactionId, answer })); // concurrent first answer: the latest one wins
   };
 
   if (raw.skip === true) {

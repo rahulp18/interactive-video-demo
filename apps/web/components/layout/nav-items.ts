@@ -41,7 +41,7 @@ export const TEACHER_NAV_ITEMS: NavItem[] = [
 /** Student navigation: exactly four destinations, in display order. Access is enforced by the route guards (see roles.ts). */
 export const STUDENT_NAV_ITEMS: NavItem[] = [
   { href: "/student", label: "Home", icon: HouseIcon },
-  { href: "/student/journeys", label: "Journeys", icon: CompassIcon },
+  { href: "/student/journeys", label: "Journeys", icon: CompassIcon, alsoActive: ["/student/modules"] },
   { href: "/student/virtues", label: "My Virtue Tree", shortLabel: "My Tree", icon: SproutIcon },
   { href: "/student/profile", label: "Profile", icon: UserRoundIcon },
 ];

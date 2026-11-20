@@ -70,11 +70,15 @@ model User {
   // Lockout lives in the database (not in memory) because every serverless request may hit a different instance.
   pinFailedAttempts Int @default(0)
   pinLockedUntil    DateTime?
+  // Preset avatar key (e.g. "fox"); the picture itself lives in code (lib/student/avatars.ts). Never a URL or upload.
+  avatar    String?
   responses InteractionResponse[]
   sessions  Session[]
   videos    Video[]
   moduleProgress ModuleProgress[]
   ratings   VirtueRating[]
+  auditActed   AuditLog[] @relation("AuditActor")
+  auditAbout   AuditLog[] @relation("AuditSubject")
   createdAt temporal.CreatedAt
   updatedAt temporal.UpdatedAt
 
@@ -82,6 +86,7 @@ model User {
   @@check(expression: sql`"pinHash" IS NULL OR "role" = 'STUDENT'`, name: "user_pin_students_only")
   @@check(expression: sql`"pinHash" IS NULL OR "username" IS NOT NULL`, name: "user_pin_needs_username")
   @@check(expression: sql`"pinFailedAttempts" >= 0`, name: "user_pin_attempts_nonneg")
+  @@check(expression: sql`"avatar" IS NULL OR "avatar" ~ '^[a-z]{3,20}$'`, name: "user_avatar_format")
 }
 
 // One row per issued web cookie or mobile bearer token. Only the SHA-256 of the token is stored.
@@ -91,11 +96,20 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   tokenHash String   @unique
   expiresAt DateTime
+  // Parental gate (a grown-up check in front of /student/parent). Kept on the session, not in a cookie, so it cannot be
+  // forged and ends with the session at logout. A gate against children wandering in, NOT access control.
+  parentGateUntil        DateTime?
+  parentGateFailures     Int       @default(0)
+  parentGateLockedUntil  DateTime?
+  // The pending grown-up question. The answer never leaves the server; the browser gets only the question text.
+  parentGateChallenge    String?
+  parentGateAnswer       Int?
   createdAt temporal.CreatedAt
   updatedAt temporal.UpdatedAt
 
   @@index([userId])
   @@index([expiresAt])
+  @@check(expression: sql`"parentGateFailures" >= 0`, name: "session_gate_failures_nonneg")
 }
 
 model Video {
@@ -189,6 +203,8 @@ model InteractionResponse {
   replayCount      Int         @default(0)
   // 1 for the first answer; incremented each time the viewer re-answers (the row still holds only the latest answer)
   attemptCount     Int         @default(1)
+  // Client idempotency key of the last save. A retry with the same key is a no-op (no second attempt is counted).
+  lastRequestId    String?
   createdAt        temporal.CreatedAt
   updatedAt        temporal.UpdatedAt
 
@@ -345,4 +361,20 @@ model VirtueRating {
   @@index([studentId, raterKind])
   @@index([virtueId])
   @@check(expression: sql`"rating" BETWEEN 1 AND 5`, name: "virtue_rating_range")
+}
+
+
+// Who looked at a child's report, and when (FR-7.14 / NFR-9.10). Deliberately NO IP address or user agent (data minimisation).
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int
+  actor     User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
+  subjectId Int
+  subject   User     @relation("AuditSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  // REPORT_VIEW | REPORT_PRINT
+  action    String
+  at        DateTime @default(now())
+
+  @@index([subjectId, at])
+  @@check(expression: sql`"action" IN ('REPORT_VIEW', 'REPORT_PRINT')`, name: "audit_action_known")
 }
