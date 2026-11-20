@@ -23,9 +23,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'eb150eb2888477c1b3fd9720dd42516664f3e86f581952e84aef3f497de256a5'>;
+  StorageHashBase<'4356762c4cff92f369547f1ae49773ab788f3fb6647fab2821e8d8394c7733fb'>;
 export type ExecutionHash =
-  ExecutionHashBase<'3f263b1c4fa43d188e61bdb02b6c0947a08555179ce28063aac5cae7e766e666'>;
+  ExecutionHashBase<'7a4a51c110b114f8240d997c427c995cd240e6824c7561b96a8b2e984099e71c'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -283,12 +283,33 @@ type FieldTypeOverrides = {
           readonly output: 'CHOICE' | 'TEXT';
           readonly input: 'CHOICE' | 'TEXT';
         };
+        readonly presentationStyle: {
+          readonly output: 'MORAL_CHOICE' | 'SITUATIONAL' | 'EMOTION' | 'PREDICT' | 'RATING';
+          readonly input: 'MORAL_CHOICE' | 'SITUATIONAL' | 'EMOTION' | 'PREDICT' | 'RATING';
+        };
         readonly type: { readonly output: 'SURVEY' | 'QUIZ'; readonly input: 'SURVEY' | 'QUIZ' };
+      };
+      readonly Module: {
+        readonly ageBand: { readonly output: '8-9' | '10-12'; readonly input: '8-9' | '10-12' };
+        readonly status: {
+          readonly output: 'DRAFT' | 'PUBLISHED';
+          readonly input: 'DRAFT' | 'PUBLISHED';
+        };
       };
       readonly User: {
         readonly role: {
           readonly output: 'STUDENT' | 'TEACHER';
           readonly input: 'STUDENT' | 'TEACHER';
+        };
+      };
+      readonly VirtueRating: {
+        readonly mark: {
+          readonly output: 'NONE' | 'STRENGTH' | 'IMPROVE';
+          readonly input: 'NONE' | 'STRENGTH' | 'IMPROVE';
+        };
+        readonly raterKind: {
+          readonly output: 'PARENT' | 'TEACHER';
+          readonly input: 'PARENT' | 'TEACHER';
         };
       };
     };
@@ -317,12 +338,33 @@ type ColumnTypeOverrides = {
         readonly output: 'CHOICE' | 'TEXT';
         readonly input: 'CHOICE' | 'TEXT';
       };
+      readonly presentationStyle: {
+        readonly output: 'MORAL_CHOICE' | 'SITUATIONAL' | 'EMOTION' | 'PREDICT' | 'RATING';
+        readonly input: 'MORAL_CHOICE' | 'SITUATIONAL' | 'EMOTION' | 'PREDICT' | 'RATING';
+      };
       readonly type: { readonly output: 'SURVEY' | 'QUIZ'; readonly input: 'SURVEY' | 'QUIZ' };
+    };
+    readonly Module: {
+      readonly ageBand: { readonly output: '8-9' | '10-12'; readonly input: '8-9' | '10-12' };
+      readonly status: {
+        readonly output: 'DRAFT' | 'PUBLISHED';
+        readonly input: 'DRAFT' | 'PUBLISHED';
+      };
     };
     readonly User: {
       readonly role: {
         readonly output: 'STUDENT' | 'TEACHER';
         readonly input: 'STUDENT' | 'TEACHER';
+      };
+    };
+    readonly VirtueRating: {
+      readonly mark: {
+        readonly output: 'NONE' | 'STRENGTH' | 'IMPROVE';
+        readonly input: 'NONE' | 'STRENGTH' | 'IMPROVE';
+      };
+      readonly raterKind: {
+        readonly output: 'PARENT' | 'TEACHER';
+        readonly input: 'PARENT' | 'TEACHER';
       };
     };
   };
@@ -350,6 +392,7 @@ export namespace Models {
     id: FieldOutputTypes['public']['Interaction']['id'];
     isSkippable: FieldOutputTypes['public']['Interaction']['isSkippable'];
     position: FieldOutputTypes['public']['Interaction']['position'];
+    presentationStyle: FieldOutputTypes['public']['Interaction']['presentationStyle'];
     question: FieldOutputTypes['public']['Interaction']['question'];
     timestamp: FieldOutputTypes['public']['Interaction']['timestamp'];
     type: FieldOutputTypes['public']['Interaction']['type'];
@@ -368,13 +411,17 @@ export namespace Models {
     text: FieldOutputTypes['public']['InteractionOption']['text'];
     interaction: public_Interaction;
     responses: public_InteractionResponse[];
-    readonly [RelationKeys]?: 'interaction' | 'responses';
+    virtueWeights: public_OptionVirtueWeight[];
+    readonly [RelationKeys]?: 'interaction' | 'responses' | 'virtueWeights';
   };
   export type public_InteractionResponse = {
+    attemptCount: FieldOutputTypes['public']['InteractionResponse']['attemptCount'];
     createdAt: FieldOutputTypes['public']['InteractionResponse']['createdAt'];
     id: FieldOutputTypes['public']['InteractionResponse']['id'];
     interactionId: FieldOutputTypes['public']['InteractionResponse']['interactionId'];
     isSkipped: FieldOutputTypes['public']['InteractionResponse']['isSkipped'];
+    replayCount: FieldOutputTypes['public']['InteractionResponse']['replayCount'];
+    responseTimeMs: FieldOutputTypes['public']['InteractionResponse']['responseTimeMs'];
     selectedOptionId: FieldOutputTypes['public']['InteractionResponse']['selectedOptionId'];
     textAnswer: FieldOutputTypes['public']['InteractionResponse']['textAnswer'];
     updatedAt: FieldOutputTypes['public']['InteractionResponse']['updatedAt'];
@@ -383,6 +430,80 @@ export namespace Models {
     selectedOption: public_InteractionOption | null;
     user: public_User;
     readonly [RelationKeys]?: 'interaction' | 'selectedOption' | 'user';
+  };
+  export type public_Journey = {
+    createdAt: FieldOutputTypes['public']['Journey']['createdAt'];
+    description: FieldOutputTypes['public']['Journey']['description'];
+    displayOrder: FieldOutputTypes['public']['Journey']['displayOrder'];
+    focusVirtueId: FieldOutputTypes['public']['Journey']['focusVirtueId'];
+    id: FieldOutputTypes['public']['Journey']['id'];
+    title: FieldOutputTypes['public']['Journey']['title'];
+    updatedAt: FieldOutputTypes['public']['Journey']['updatedAt'];
+    focusVirtue: public_Virtue | null;
+    modules: public_JourneyModule[];
+    readonly [RelationKeys]?: 'focusVirtue' | 'modules';
+  };
+  export type public_JourneyModule = {
+    id: FieldOutputTypes['public']['JourneyModule']['id'];
+    journeyId: FieldOutputTypes['public']['JourneyModule']['journeyId'];
+    level: FieldOutputTypes['public']['JourneyModule']['level'];
+    moduleId: FieldOutputTypes['public']['JourneyModule']['moduleId'];
+    position: FieldOutputTypes['public']['JourneyModule']['position'];
+    journey: public_Journey;
+    module: public_Module;
+    readonly [RelationKeys]?: 'journey' | 'module';
+  };
+  export type public_Module = {
+    ageBand: FieldOutputTypes['public']['Module']['ageBand'];
+    createdAt: FieldOutputTypes['public']['Module']['createdAt'];
+    discussionPrompts: FieldOutputTypes['public']['Module']['discussionPrompts'];
+    followUpActivity: FieldOutputTypes['public']['Module']['followUpActivity'];
+    id: FieldOutputTypes['public']['Module']['id'];
+    learningObjective: FieldOutputTypes['public']['Module']['learningObjective'];
+    primaryVirtueId: FieldOutputTypes['public']['Module']['primaryVirtueId'];
+    sourceStory: FieldOutputTypes['public']['Module']['sourceStory'];
+    status: FieldOutputTypes['public']['Module']['status'];
+    updatedAt: FieldOutputTypes['public']['Module']['updatedAt'];
+    version: FieldOutputTypes['public']['Module']['version'];
+    videoId: FieldOutputTypes['public']['Module']['videoId'];
+    journeyModules: public_JourneyModule[];
+    primaryVirtue: public_Virtue;
+    progress: public_ModuleProgress[];
+    secondaryVirtues: public_ModuleSecondaryVirtue[];
+    video: public_Video;
+    readonly [RelationKeys]?:
+      'journeyModules' | 'primaryVirtue' | 'progress' | 'secondaryVirtues' | 'video';
+  };
+  export type public_ModuleProgress = {
+    completedAt: FieldOutputTypes['public']['ModuleProgress']['completedAt'];
+    id: FieldOutputTypes['public']['ModuleProgress']['id'];
+    lastPositionSeconds: FieldOutputTypes['public']['ModuleProgress']['lastPositionSeconds'];
+    moduleId: FieldOutputTypes['public']['ModuleProgress']['moduleId'];
+    startedAt: FieldOutputTypes['public']['ModuleProgress']['startedAt'];
+    updatedAt: FieldOutputTypes['public']['ModuleProgress']['updatedAt'];
+    userId: FieldOutputTypes['public']['ModuleProgress']['userId'];
+    module: public_Module;
+    user: public_User;
+    readonly [RelationKeys]?: 'module' | 'user';
+  };
+  export type public_ModuleSecondaryVirtue = {
+    id: FieldOutputTypes['public']['ModuleSecondaryVirtue']['id'];
+    moduleId: FieldOutputTypes['public']['ModuleSecondaryVirtue']['moduleId'];
+    position: FieldOutputTypes['public']['ModuleSecondaryVirtue']['position'];
+    primaryVirtueId: FieldOutputTypes['public']['ModuleSecondaryVirtue']['primaryVirtueId'];
+    virtueId: FieldOutputTypes['public']['ModuleSecondaryVirtue']['virtueId'];
+    module: public_Module;
+    virtue: public_Virtue;
+    readonly [RelationKeys]?: 'module' | 'virtue';
+  };
+  export type public_OptionVirtueWeight = {
+    id: FieldOutputTypes['public']['OptionVirtueWeight']['id'];
+    optionId: FieldOutputTypes['public']['OptionVirtueWeight']['optionId'];
+    virtueId: FieldOutputTypes['public']['OptionVirtueWeight']['virtueId'];
+    weight: FieldOutputTypes['public']['OptionVirtueWeight']['weight'];
+    option: public_InteractionOption;
+    virtue: public_Virtue;
+    readonly [RelationKeys]?: 'option' | 'virtue';
   };
   export type public_Session = {
     createdAt: FieldOutputTypes['public']['Session']['createdAt'];
@@ -402,10 +523,12 @@ export namespace Models {
     password: FieldOutputTypes['public']['User']['password'];
     role: FieldOutputTypes['public']['User']['role'];
     updatedAt: FieldOutputTypes['public']['User']['updatedAt'];
+    moduleProgress: public_ModuleProgress[];
+    ratings: public_VirtueRating[];
     responses: public_InteractionResponse[];
     sessions: public_Session[];
     videos: public_Video[];
-    readonly [RelationKeys]?: 'responses' | 'sessions' | 'videos';
+    readonly [RelationKeys]?: 'moduleProgress' | 'ratings' | 'responses' | 'sessions' | 'videos';
   };
   export type public_Video = {
     createdAt: FieldOutputTypes['public']['Video']['createdAt'];
@@ -422,8 +545,37 @@ export namespace Models {
     updatedAt: FieldOutputTypes['public']['Video']['updatedAt'];
     uploaderId: FieldOutputTypes['public']['Video']['uploaderId'];
     interactions: public_Interaction[];
+    module: public_Module | null;
     uploader: public_User;
-    readonly [RelationKeys]?: 'interactions' | 'uploader';
+    readonly [RelationKeys]?: 'interactions' | 'module' | 'uploader';
+  };
+  export type public_Virtue = {
+    essence: FieldOutputTypes['public']['Virtue']['essence'];
+    id: FieldOutputTypes['public']['Virtue']['id'];
+    name: FieldOutputTypes['public']['Virtue']['name'];
+    position: FieldOutputTypes['public']['Virtue']['position'];
+    slug: FieldOutputTypes['public']['Virtue']['slug'];
+    journeys: public_Journey[];
+    optionWeights: public_OptionVirtueWeight[];
+    primaryModules: public_Module[];
+    ratings: public_VirtueRating[];
+    secondaryModules: public_ModuleSecondaryVirtue[];
+    readonly [RelationKeys]?:
+      'journeys' | 'optionWeights' | 'primaryModules' | 'ratings' | 'secondaryModules';
+  };
+  export type public_VirtueRating = {
+    id: FieldOutputTypes['public']['VirtueRating']['id'];
+    mark: FieldOutputTypes['public']['VirtueRating']['mark'];
+    notes: FieldOutputTypes['public']['VirtueRating']['notes'];
+    ratedAt: FieldOutputTypes['public']['VirtueRating']['ratedAt'];
+    raterKind: FieldOutputTypes['public']['VirtueRating']['raterKind'];
+    raterName: FieldOutputTypes['public']['VirtueRating']['raterName'];
+    rating: FieldOutputTypes['public']['VirtueRating']['rating'];
+    studentId: FieldOutputTypes['public']['VirtueRating']['studentId'];
+    virtueId: FieldOutputTypes['public']['VirtueRating']['virtueId'];
+    student: public_User;
+    virtue: public_Virtue;
+    readonly [RelationKeys]?: 'student' | 'virtue';
   };
 }
 
@@ -432,9 +584,17 @@ export declare const models: {
     Interaction: Models.public_Interaction;
     InteractionOption: Models.public_InteractionOption;
     InteractionResponse: Models.public_InteractionResponse;
+    Journey: Models.public_Journey;
+    JourneyModule: Models.public_JourneyModule;
+    Module: Models.public_Module;
+    ModuleProgress: Models.public_ModuleProgress;
+    ModuleSecondaryVirtue: Models.public_ModuleSecondaryVirtue;
+    OptionVirtueWeight: Models.public_OptionVirtueWeight;
     Session: Models.public_Session;
     User: Models.public_User;
     Video: Models.public_Video;
+    Virtue: Models.public_Virtue;
+    VirtueRating: Models.public_VirtueRating;
   };
 };
 
@@ -508,6 +668,16 @@ type ContractBase = Omit<
                   readonly default: {
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly presentationStyle: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'MORAL_CHOICE'>;
                   };
                   readonly many: false;
                 };
@@ -649,6 +819,16 @@ type ContractBase = Omit<
             };
             readonly InteractionResponse: {
               columns: {
+                readonly attemptCount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -680,6 +860,22 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
+                  readonly many: false;
+                };
+                readonly replayCount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly responseTimeMs: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly selectedOptionId: {
@@ -771,6 +967,559 @@ type ContractBase = Omit<
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'InteractionOption';
                     readonly columns: readonly ['id', 'interactionId'];
+                  };
+                },
+              ];
+            };
+            readonly Journey: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly description: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly displayOrder: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly focusVirtueId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly title: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'Journey_focusVirtueId_idx_9e10deff';
+                  readonly prefix: 'Journey_focusVirtueId_idx';
+                  readonly columns: readonly ['focusVirtueId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Journey';
+                    readonly columns: readonly ['focusVirtueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Virtue';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly JourneyModule: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly journeyId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly level: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly moduleId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly position: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['journeyId', 'moduleId'] },
+                { readonly columns: readonly ['journeyId', 'level', 'position'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'JourneyModule_journeyId_idx_6d2acbdc';
+                  readonly prefix: 'JourneyModule_journeyId_idx';
+                  readonly columns: readonly ['journeyId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'JourneyModule_moduleId_idx_04fe188b';
+                  readonly prefix: 'JourneyModule_moduleId_idx';
+                  readonly columns: readonly ['moduleId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'JourneyModule';
+                    readonly columns: readonly ['journeyId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Journey';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'JourneyModule';
+                    readonly columns: readonly ['moduleId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Module';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly Module: {
+              columns: {
+                readonly ageBand: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly discussionPrompts: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: { readonly elementNullable: false };
+                };
+                readonly followUpActivity: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly learningObjective: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly primaryVirtueId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly sourceStory: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'DRAFT'>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly version: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                  readonly many: false;
+                };
+                readonly videoId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['videoId'] },
+                { readonly columns: readonly ['id', 'primaryVirtueId'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'Module_primaryVirtueId_idx_e584541b';
+                  readonly prefix: 'Module_primaryVirtueId_idx';
+                  readonly columns: readonly ['primaryVirtueId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Module';
+                    readonly columns: readonly ['videoId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Video';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Module';
+                    readonly columns: readonly ['primaryVirtueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Virtue';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ModuleProgress: {
+              columns: {
+                readonly completedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly lastPositionSeconds: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/float8@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly moduleId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly startedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly userId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['userId', 'moduleId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'ModuleProgress_moduleId_idx_04fe188b';
+                  readonly prefix: 'ModuleProgress_moduleId_idx';
+                  readonly columns: readonly ['moduleId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ModuleProgress_userId_idx_a489d58a';
+                  readonly prefix: 'ModuleProgress_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ModuleProgress';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ModuleProgress';
+                    readonly columns: readonly ['moduleId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Module';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ModuleSecondaryVirtue: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly moduleId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly position: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly primaryVirtueId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly virtueId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['moduleId', 'position'] },
+                { readonly columns: readonly ['moduleId', 'virtueId'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx_0ad0c278';
+                  readonly prefix: 'ModuleSecondaryVirtue_moduleId_primaryVirtueId_idx';
+                  readonly columns: readonly ['moduleId', 'primaryVirtueId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ModuleSecondaryVirtue_virtueId_idx_e138c4cd';
+                  readonly prefix: 'ModuleSecondaryVirtue_virtueId_idx';
+                  readonly columns: readonly ['virtueId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ModuleSecondaryVirtue';
+                    readonly columns: readonly ['virtueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Virtue';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ModuleSecondaryVirtue';
+                    readonly columns: readonly ['moduleId', 'primaryVirtueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Module';
+                    readonly columns: readonly ['id', 'primaryVirtueId'];
+                  };
+                },
+              ];
+            };
+            readonly OptionVirtueWeight: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly optionId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly virtueId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly weight: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['optionId', 'virtueId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'OptionVirtueWeight_optionId_idx_b1d5fce5';
+                  readonly prefix: 'OptionVirtueWeight_optionId_idx';
+                  readonly columns: readonly ['optionId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'OptionVirtueWeight_virtueId_idx_e138c4cd';
+                  readonly prefix: 'OptionVirtueWeight_virtueId_idx';
+                  readonly columns: readonly ['virtueId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'OptionVirtueWeight';
+                    readonly columns: readonly ['optionId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'InteractionOption';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'OptionVirtueWeight';
+                    readonly columns: readonly ['virtueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Virtue';
+                    readonly columns: readonly ['id'];
                   };
                 },
               ];
@@ -1031,8 +1780,173 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly Virtue: {
+              columns: {
+                readonly essence: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly name: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly position: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly slug: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['slug'] },
+                { readonly columns: readonly ['position'] },
+              ];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly VirtueRating: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly mark: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'NONE'>;
+                  };
+                  readonly many: false;
+                };
+                readonly notes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly ratedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly raterKind: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly raterName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly rating: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly studentId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly virtueId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'VirtueRating_studentId_idx_bf255322';
+                  readonly prefix: 'VirtueRating_studentId_idx';
+                  readonly columns: readonly ['studentId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'VirtueRating_studentId_raterKind_idx_d2c3d7bb';
+                  readonly prefix: 'VirtueRating_studentId_raterKind_idx';
+                  readonly columns: readonly ['studentId', 'raterKind'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'VirtueRating_virtueId_idx_e138c4cd';
+                  readonly prefix: 'VirtueRating_virtueId_idx';
+                  readonly columns: readonly ['virtueId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'VirtueRating';
+                    readonly columns: readonly ['studentId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'VirtueRating';
+                    readonly columns: readonly ['virtueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Virtue';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
           };
           readonly valueSet: {
+            readonly AgeBand: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['8-9', '10-12'];
+            };
             readonly AnswerType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['CHOICE', 'TEXT'];
@@ -1040,6 +1954,28 @@ type ContractBase = Omit<
             readonly InteractionType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['SURVEY', 'QUIZ'];
+            };
+            readonly ModuleStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['DRAFT', 'PUBLISHED'];
+            };
+            readonly PresentationStyle: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'MORAL_CHOICE',
+                'SITUATIONAL',
+                'EMOTION',
+                'PREDICT',
+                'RATING',
+              ];
+            };
+            readonly RaterKind: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['PARENT', 'TEACHER'];
+            };
+            readonly RatingMark: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['NONE', 'STRENGTH', 'IMPROVE'];
             };
             readonly UserRole: {
               readonly kind: 'valueSet';
@@ -1068,9 +2004,32 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'InteractionResponse';
     };
+    readonly Journey: { readonly namespace: 'public' & NamespaceId; readonly model: 'Journey' };
+    readonly JourneyModule: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'JourneyModule';
+    };
+    readonly Module: { readonly namespace: 'public' & NamespaceId; readonly model: 'Module' };
+    readonly ModuleProgress: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ModuleProgress';
+    };
+    readonly ModuleSecondaryVirtue: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ModuleSecondaryVirtue';
+    };
+    readonly OptionVirtueWeight: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'OptionVirtueWeight';
+    };
     readonly Session: { readonly namespace: 'public' & NamespaceId; readonly model: 'Session' };
     readonly User: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
     readonly Video: { readonly namespace: 'public' & NamespaceId; readonly model: 'Video' };
+    readonly Virtue: { readonly namespace: 'public' & NamespaceId; readonly model: 'Virtue' };
+    readonly VirtueRating: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'VirtueRating';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -1105,6 +2064,10 @@ type ContractBase = Omit<
               readonly position: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly presentationStyle: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly question: {
                 readonly nullable: false;
@@ -1177,6 +2140,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly isSkippable: { readonly column: 'isSkippable' };
                 readonly position: { readonly column: 'position' };
+                readonly presentationStyle: { readonly column: 'presentationStyle' };
                 readonly question: { readonly column: 'question' };
                 readonly timestamp: { readonly column: 'timestamp' };
                 readonly type: { readonly column: 'type' };
@@ -1232,6 +2196,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['selectedOptionId', 'interactionId'];
                 };
               };
+              readonly virtueWeights: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'OptionVirtueWeight';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['optionId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'InteractionOption';
@@ -1247,6 +2222,10 @@ type ContractBase = Omit<
           };
           readonly InteractionResponse: {
             readonly fields: {
+              readonly attemptCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -1266,6 +2245,14 @@ type ContractBase = Omit<
               readonly isSkipped: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly replayCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly responseTimeMs: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly selectedOptionId: {
                 readonly nullable: true;
@@ -1327,14 +2314,491 @@ type ContractBase = Omit<
               readonly table: 'InteractionResponse';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly attemptCount: { readonly column: 'attemptCount' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly interactionId: { readonly column: 'interactionId' };
                 readonly isSkipped: { readonly column: 'isSkipped' };
+                readonly replayCount: { readonly column: 'replayCount' };
+                readonly responseTimeMs: { readonly column: 'responseTimeMs' };
                 readonly selectedOptionId: { readonly column: 'selectedOptionId' };
                 readonly textAnswer: { readonly column: 'textAnswer' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly Journey: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly description: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly displayOrder: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly focusVirtueId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+            };
+            readonly relations: {
+              readonly focusVirtue: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Virtue';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['focusVirtueId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly modules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'JourneyModule';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['journeyId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'Journey';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly description: { readonly column: 'description' };
+                readonly displayOrder: { readonly column: 'displayOrder' };
+                readonly focusVirtueId: { readonly column: 'focusVirtueId' };
+                readonly id: { readonly column: 'id' };
+                readonly title: { readonly column: 'title' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly JourneyModule: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly journeyId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly level: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly moduleId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly position: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly journey: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Journey';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['journeyId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly module: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Module';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['moduleId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'JourneyModule';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly journeyId: { readonly column: 'journeyId' };
+                readonly level: { readonly column: 'level' };
+                readonly moduleId: { readonly column: 'moduleId' };
+                readonly position: { readonly column: 'position' };
+              };
+            };
+          };
+          readonly Module: {
+            readonly fields: {
+              readonly ageBand: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly discussionPrompts: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly many: { readonly elementNullable: false };
+              };
+              readonly followUpActivity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly learningObjective: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly primaryVirtueId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly sourceStory: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly videoId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly journeyModules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'JourneyModule';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['moduleId'];
+                };
+              };
+              readonly primaryVirtue: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Virtue';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['primaryVirtueId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly progress: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ModuleProgress';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['moduleId'];
+                };
+              };
+              readonly secondaryVirtues: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ModuleSecondaryVirtue';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id', 'primaryVirtueId'];
+                  readonly targetFields: readonly ['moduleId', 'primaryVirtueId'];
+                };
+              };
+              readonly video: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Video';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['videoId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'Module';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly ageBand: { readonly column: 'ageBand' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly discussionPrompts: { readonly column: 'discussionPrompts' };
+                readonly followUpActivity: { readonly column: 'followUpActivity' };
+                readonly id: { readonly column: 'id' };
+                readonly learningObjective: { readonly column: 'learningObjective' };
+                readonly primaryVirtueId: { readonly column: 'primaryVirtueId' };
+                readonly sourceStory: { readonly column: 'sourceStory' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+                readonly videoId: { readonly column: 'videoId' };
+              };
+            };
+          };
+          readonly ModuleProgress: {
+            readonly fields: {
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly lastPositionSeconds: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly moduleId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly startedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly module: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Module';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['moduleId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ModuleProgress';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly completedAt: { readonly column: 'completedAt' };
+                readonly id: { readonly column: 'id' };
+                readonly lastPositionSeconds: { readonly column: 'lastPositionSeconds' };
+                readonly moduleId: { readonly column: 'moduleId' };
+                readonly startedAt: { readonly column: 'startedAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly ModuleSecondaryVirtue: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly moduleId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly position: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly primaryVirtueId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly virtueId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly module: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Module';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['moduleId', 'primaryVirtueId'];
+                  readonly targetFields: readonly ['id', 'primaryVirtueId'];
+                };
+              };
+              readonly virtue: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Virtue';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['virtueId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ModuleSecondaryVirtue';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly moduleId: { readonly column: 'moduleId' };
+                readonly position: { readonly column: 'position' };
+                readonly primaryVirtueId: { readonly column: 'primaryVirtueId' };
+                readonly virtueId: { readonly column: 'virtueId' };
+              };
+            };
+          };
+          readonly OptionVirtueWeight: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly optionId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly virtueId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly weight: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly option: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'InteractionOption';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['optionId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly virtue: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Virtue';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['virtueId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'OptionVirtueWeight';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly optionId: { readonly column: 'optionId' };
+                readonly virtueId: { readonly column: 'virtueId' };
+                readonly weight: { readonly column: 'weight' };
               };
             };
           };
@@ -1441,6 +2905,28 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly moduleProgress: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ModuleProgress';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
+              readonly ratings: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'VirtueRating';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['studentId'];
+                };
+              };
               readonly responses: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -1564,6 +3050,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['videoId'];
                 };
               };
+              readonly module: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Module';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['videoId'];
+                };
+              };
               readonly uploader: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
@@ -1594,8 +3092,189 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly Virtue: {
+            readonly fields: {
+              readonly essence: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly position: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly slug: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly journeys: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Journey';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['focusVirtueId'];
+                };
+              };
+              readonly optionWeights: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'OptionVirtueWeight';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['virtueId'];
+                };
+              };
+              readonly primaryModules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Module';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['primaryVirtueId'];
+                };
+              };
+              readonly ratings: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'VirtueRating';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['virtueId'];
+                };
+              };
+              readonly secondaryModules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ModuleSecondaryVirtue';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['virtueId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'Virtue';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly essence: { readonly column: 'essence' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly position: { readonly column: 'position' };
+                readonly slug: { readonly column: 'slug' };
+              };
+            };
+          };
+          readonly VirtueRating: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly mark: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ratedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly raterKind: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly raterName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly rating: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly studentId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly virtueId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly student: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['studentId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly virtue: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Virtue';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['virtueId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'VirtueRating';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly mark: { readonly column: 'mark' };
+                readonly notes: { readonly column: 'notes' };
+                readonly ratedAt: { readonly column: 'ratedAt' };
+                readonly raterKind: { readonly column: 'raterKind' };
+                readonly raterName: { readonly column: 'raterName' };
+                readonly rating: { readonly column: 'rating' };
+                readonly studentId: { readonly column: 'studentId' };
+                readonly virtueId: { readonly column: 'virtueId' };
+              };
+            };
+          };
         };
         readonly enum: {
+          readonly AgeBand: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'AGE_8_9'; readonly value: '8-9' },
+              { readonly name: 'AGE_10_12'; readonly value: '10-12' },
+            ];
+          };
           readonly AnswerType: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -1610,6 +3289,38 @@ type ContractBase = Omit<
               { readonly name: 'QUIZ'; readonly value: 'QUIZ' },
             ];
           };
+          readonly ModuleStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'DRAFT'; readonly value: 'DRAFT' },
+              { readonly name: 'PUBLISHED'; readonly value: 'PUBLISHED' },
+            ];
+          };
+          readonly PresentationStyle: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'MORAL_CHOICE'; readonly value: 'MORAL_CHOICE' },
+              { readonly name: 'SITUATIONAL'; readonly value: 'SITUATIONAL' },
+              { readonly name: 'EMOTION'; readonly value: 'EMOTION' },
+              { readonly name: 'PREDICT'; readonly value: 'PREDICT' },
+              { readonly name: 'RATING'; readonly value: 'RATING' },
+            ];
+          };
+          readonly RaterKind: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'PARENT'; readonly value: 'PARENT' },
+              { readonly name: 'TEACHER'; readonly value: 'TEACHER' },
+            ];
+          };
+          readonly RatingMark: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'NONE'; readonly value: 'NONE' },
+              { readonly name: 'STRENGTH'; readonly value: 'STRENGTH' },
+              { readonly name: 'IMPROVE'; readonly value: 'IMPROVE' },
+            ];
+          };
           readonly UserRole: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -1619,6 +3330,10 @@ type ContractBase = Omit<
           };
         };
         readonly enumMemberTypes?: {
+          readonly AgeBand: readonly [
+            { readonly name: 'AGE_8_9'; readonly value: '8-9' },
+            { readonly name: 'AGE_10_12'; readonly value: '10-12' },
+          ];
           readonly AnswerType: readonly [
             { readonly name: 'CHOICE'; readonly value: 'CHOICE' },
             { readonly name: 'TEXT'; readonly value: 'TEXT' },
@@ -1626,6 +3341,26 @@ type ContractBase = Omit<
           readonly InteractionType: readonly [
             { readonly name: 'SURVEY'; readonly value: 'SURVEY' },
             { readonly name: 'QUIZ'; readonly value: 'QUIZ' },
+          ];
+          readonly ModuleStatus: readonly [
+            { readonly name: 'DRAFT'; readonly value: 'DRAFT' },
+            { readonly name: 'PUBLISHED'; readonly value: 'PUBLISHED' },
+          ];
+          readonly PresentationStyle: readonly [
+            { readonly name: 'MORAL_CHOICE'; readonly value: 'MORAL_CHOICE' },
+            { readonly name: 'SITUATIONAL'; readonly value: 'SITUATIONAL' },
+            { readonly name: 'EMOTION'; readonly value: 'EMOTION' },
+            { readonly name: 'PREDICT'; readonly value: 'PREDICT' },
+            { readonly name: 'RATING'; readonly value: 'RATING' },
+          ];
+          readonly RaterKind: readonly [
+            { readonly name: 'PARENT'; readonly value: 'PARENT' },
+            { readonly name: 'TEACHER'; readonly value: 'TEACHER' },
+          ];
+          readonly RatingMark: readonly [
+            { readonly name: 'NONE'; readonly value: 'NONE' },
+            { readonly name: 'STRENGTH'; readonly value: 'STRENGTH' },
+            { readonly name: 'IMPROVE'; readonly value: 'IMPROVE' },
           ];
           readonly UserRole: readonly [
             { readonly name: 'STUDENT'; readonly value: 'STUDENT' },
@@ -1721,6 +3456,81 @@ type ContractBase = Omit<
           };
           readonly ref: {
             readonly entry: 'InteractionResponse';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Journey';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Journey';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Module';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Module';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'ModuleProgress';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

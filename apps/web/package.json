@@ -9,7 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "seed:demo": "tsx --conditions=react-server scripts/demo/seed.ts",
+    "demo:reset": "tsx --conditions=react-server scripts/demo/reset.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -39,6 +41,7 @@
     "eslint-config-next": "16.4.3",
     "prisma": "8.0.0-rc.29",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "vitest": "^5.0.5"
   }
