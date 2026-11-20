@@ -13,8 +13,8 @@ export function homePathFor(role: UserRole): string {
   return role === "TEACHER" ? "/dashboard" : "/student";
 }
 
-// Everything else (/library, /settings, /watch/*, /login, ...) is shared by both roles.
-const TEACHER_ONLY = ["/dashboard", "/upload", "/videos", "/surveys", "/quizzes", "/responses"] as const;
+// Everything else (/settings, /watch/*, /login, ...) is shared by both roles.
+const TEACHER_ONLY = ["/dashboard", "/upload", "/videos", "/modules", "/journeys", "/students"] as const;
 const STUDENT_ONLY = ["/welcome", "/student"] as const;
 
 const under = (pathname: string, prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -45,7 +45,7 @@ export function intendedRoleFor(rawNext: string | null | undefined): UserRole | 
   if (!next) return null;
   if (!canAccessPath("TEACHER", next)) return "STUDENT";
   if (!canAccessPath("STUDENT", next)) return "TEACHER";
-  return null; // shared routes (/library, /watch, ...) say nothing about who is signing in
+  return null; // shared routes (/settings, /watch, ...) say nothing about who is signing in
 }
 
 /**

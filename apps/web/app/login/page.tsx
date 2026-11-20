@@ -20,10 +20,10 @@ const nextParam = async (searchParams: PageProps<"/login">["searchParams"]) => {
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   const card = (
     <AuthCard
-      title="Welcome back"
-      description="Sign in to pick up where you left off."
-      panelTitle="Good to see you again."
-      panelText="Pick up where you left off. Your answers are saved to your account."
+      title="Hello! Ready to learn?"
+      description="Tell us who you are and let’s go."
+      panelTitle="Watch, think, answer, grow!"
+      panelText="Videos stop to ask you fun questions. Every answer helps your tree grow."
     >
       <SignIn />
     </AuthCard>

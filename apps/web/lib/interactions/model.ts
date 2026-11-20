@@ -7,6 +7,31 @@ export const ANSWER_TYPES = ["CHOICE", "TEXT"] as const;
 export type AnswerType = (typeof ANSWER_TYPES)[number];
 export const isAnswerType = (v: unknown): v is AnswerType => v === "CHOICE" || v === "TEXT";
 
+/**
+ * How the student player draws a question (display only; stored on Interaction.presentationStyle). Every style is
+ * answerType CHOICE; RATING is exactly 5 ordered options drawn as a slider.
+ */
+export const PRESENTATION_STYLES = ["MORAL_CHOICE", "SITUATIONAL", "EMOTION", "PREDICT", "RATING"] as const;
+export type PresentationStyle = (typeof PRESENTATION_STYLES)[number];
+export const isPresentationStyle = (v: unknown): v is PresentationStyle => PRESENTATION_STYLES.includes(v as PresentationStyle);
+export const DEFAULT_PRESENTATION_STYLE: PresentationStyle = "MORAL_CHOICE";
+export const PRESENTATION_STYLE_INFO: Record<PresentationStyle, { label: string; help: string }> = {
+  MORAL_CHOICE: { label: "Moral choice", help: "What should a character do? Big picture cards." },
+  SITUATIONAL: { label: "Situational", help: "What would YOU do in a similar everyday situation?" },
+  EMOTION: { label: "Emotion", help: "Pick a feeling. Options are shown as a grid of faces." },
+  PREDICT: { label: "Predict", help: "What happens next? Usually a quiz with one right answer." },
+  RATING: { label: "Rating", help: "A 1-5 slider. Exactly 5 options, from lowest to highest." },
+};
+/** RATING is drawn as a five-step slider. */
+export const RATING_OPTIONS = 5;
+
+/** Virtue weight of one answer option: -2 (harmful) .. +2 (exemplary). 0 means "no row". */
+export const WEIGHT_MIN = -2;
+export const WEIGHT_MAX = 2;
+export const WEIGHT_STEPS = [-2, -1, 0, 1, 2] as const;
+/** virtueId -> non-zero weight. */
+export type OptionWeights = Record<number, number>;
+
 export const QUESTION_MAX = 500;
 /** Longest free-text answer a viewer may submit. */
 export const ANSWER_TEXT_MAX = 500;
@@ -18,13 +43,15 @@ export const OPTION_TEXT_MAX = 200;
 export const OPTIONS_MIN = 2;
 export const OPTIONS_MAX = 8;
 
-export type OptionDTO = { id: number; text: string; isCorrect: boolean; position: number };
+/** `weights`: virtueId -> non-zero weight (every virtue with a row, not only the module's current ones). Teacher-only. */
+export type OptionDTO = { id: number; text: string; isCorrect: boolean; position: number; weights: OptionWeights };
 export type InteractionDTO = {
   id: number;
   videoId: number;
   timestamp: number;
   type: InteractionType;
   answerType: AnswerType;
+  presentationStyle: PresentationStyle;
   question: string;
   /** TEXT quizzes only: the expected answer. */
   correctAnswer: string | null;
@@ -33,11 +60,15 @@ export type InteractionDTO = {
   options: OptionDTO[];
 };
 
-/** `id` is set when an existing option is being edited, so its row (and any responses to it) is preserved. */
-export type OptionInput = { id?: number; text: string; isCorrect: boolean };
+/**
+ * `id` is set when an existing option is being edited, so its row (and any responses to it) is preserved.
+ * `weights` (story modules only): the option's non-zero weights for the MODULE's virtues.
+ */
+export type OptionInput = { id?: number; text: string; isCorrect: boolean; weights?: OptionWeights };
 export type InteractionInput = {
   type: InteractionType;
   answerType: AnswerType;
+  presentationStyle: PresentationStyle;
   correctAnswer: string | null;
   timestamp: number;
   question: string;
@@ -81,11 +112,21 @@ export function formatPreciseTimestamp(seconds: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
+/** The story module behind a video, as the editor needs it: primary virtue first, then the secondaries in order. */
+export type EditorModuleVirtue = { id: number; slug: string; name: string; role: "primary" | "secondary" };
+export type EditorModule = { moduleId: number; status: "DRAFT" | "PUBLISHED"; virtues: EditorModuleVirtue[] };
+
+/** Context the SERVER derives (never the client): set when the video is a PARICHAY story module. */
+export type InteractionContext = { moduleVirtueIds?: readonly number[] };
+
 /**
  * Validates an interaction payload against the video's duration. Only named fields are copied out, so unknown
  * properties never reach the database layer. SURVEY options never carry a correct flag; a QUIZ has exactly one.
+ * Story modules (`ctx.moduleVirtueIds`): CHOICE only (the student player cannot draw typed answers), a known style,
+ * RATING has exactly 5 options, and option weights are -2..2 for the module's own virtues. Plain videos take no weights
+ * and keep the default style.
  */
-export function validateInteraction(body: unknown, duration: number): ValidationResult<InteractionInput> {
+export function validateInteraction(body: unknown, duration: number, ctx: InteractionContext = {}): ValidationResult<InteractionInput> {
   const errors: Record<string, string> = {};
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     return { errors: { _: "Request body must be a JSON object." } };
@@ -114,6 +155,16 @@ export function validateInteraction(body: unknown, duration: number): Validation
   const answerType = raw.answerType === undefined ? "CHOICE" : raw.answerType;
   if (!isAnswerType(answerType)) errors.answerType = "Answer type must be CHOICE or TEXT.";
 
+  const moduleVirtues = ctx.moduleVirtueIds ? new Set(ctx.moduleVirtueIds) : null;
+  let presentationStyle: PresentationStyle = DEFAULT_PRESENTATION_STYLE;
+  if (moduleVirtues) {
+    if (answerType === "TEXT") errors.answerType = "Story modules use answer options: the student player cannot show typed answers.";
+    if (raw.presentationStyle !== undefined) {
+      if (isPresentationStyle(raw.presentationStyle)) presentationStyle = raw.presentationStyle;
+      else errors.presentationStyle = "Unknown presentation style.";
+    }
+  }
+
   const options: OptionInput[] = [];
   let correctAnswer: string | null = null;
   if (answerType === "TEXT") {
@@ -139,12 +190,18 @@ export function validateInteraction(body: unknown, duration: number): Validation
       if (id !== undefined && id !== null && (typeof id !== "number" || !Number.isInteger(id) || id <= 0)) {
         errors[`options.${i}`] = "Invalid option id.";
       }
+      const weights = parseWeights(o.weights, moduleVirtues);
+      if (typeof weights === "string") errors[`options.${i}.weights`] = weights;
       options.push({
         ...(typeof id === "number" && Number.isInteger(id) && id > 0 && { id }),
         text,
         isCorrect: type === "QUIZ" && o.isCorrect === true,
+        ...(moduleVirtues && typeof weights === "object" && { weights }),
       });
     });
+    if (!errors.options && moduleVirtues && presentationStyle === "RATING" && options.length !== RATING_OPTIONS) {
+      errors.options = `A rating question has exactly ${RATING_OPTIONS} options, from lowest to highest.`;
+    }
     const ids = options.flatMap((o) => (o.id === undefined ? [] : [o.id]));
     if (new Set(ids).size !== ids.length) errors.options = "Duplicate option ids.";
     if (!errors.options && type === "QUIZ" && options.filter((o) => o.isCorrect).length !== 1) {
@@ -154,6 +211,39 @@ export function validateInteraction(body: unknown, duration: number): Validation
 
   if (Object.keys(errors).length > 0) return { errors };
   return {
-    value: { type: type as InteractionType, answerType: answerType as AnswerType, correctAnswer, timestamp, question, isSkippable: raw.isSkippable === true, options },
+    value: {
+      type: type as InteractionType,
+      answerType: answerType as AnswerType,
+      presentationStyle,
+      correctAnswer,
+      timestamp,
+      question,
+      isSkippable: raw.isSkippable === true,
+      options,
+    },
   };
 }
+
+/**
+ * An option's weights: a map virtueId -> integer -2..2 (keys may be numeric strings, as JSON object keys are). Zeros
+ * are dropped (no row = no weight). Returns an error message instead when the input is not acceptable.
+ */
+function parseWeights(raw: unknown, moduleVirtues: ReadonlySet<number> | null): OptionWeights | string {
+  if (raw === undefined || raw === null) return {};
+  if (typeof raw !== "object" || Array.isArray(raw)) return "Weights must be an object of virtue id to weight.";
+  const entries = Object.entries(raw as Record<string, unknown>);
+  if (!moduleVirtues) return entries.length === 0 ? {} : "Only story modules have virtue weights.";
+  const out: OptionWeights = {};
+  for (const [key, value] of entries) {
+    const virtueId = /^\d{1,10}$/.test(key) ? Number(key) : NaN;
+    if (!moduleVirtues.has(virtueId)) return "Weights can only use this module's virtues.";
+    if (typeof value !== "number" || !Number.isInteger(value) || value < WEIGHT_MIN || value > WEIGHT_MAX) {
+      return `Weights must be whole numbers from ${WEIGHT_MIN} to ${WEIGHT_MAX}.`;
+    }
+    if (value !== 0) out[virtueId] = value;
+  }
+  return out;
+}
+
+/** True when at least one option of the question weighs a virtue (a question without weights scores nothing). */
+export const hasWeights = (options: readonly { weights: OptionWeights }[]): boolean => options.some((o) => Object.keys(o.weights).length > 0);

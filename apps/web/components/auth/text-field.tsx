@@ -23,8 +23,8 @@ export function TextField({ id, label, error, hint, type, className, ...input }:
           type={isPassword && revealed ? "text" : type}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          // Taller than the default input: comfortable touch targets on phones (44px), compact on desktop.
-          className={cn("h-11 px-3 md:h-10", isPassword && "pr-12", className)}
+          // Child-friendly 48px touch target, rounded to match the PARICHAY theme.
+          className={cn("h-13 rounded-2xl border-2 bg-background px-4 text-lg font-semibold md:text-lg", isPassword && "pr-12", className)}
           {...input}
         />
         {isPassword && (
@@ -33,9 +33,9 @@ export function TextField({ id, label, error, hint, type, className, ...input }:
             onClick={() => setRevealed((v) => !v)}
             aria-label={revealed ? "Hide password" : "Show password"}
             aria-pressed={revealed}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
           >
-            {revealed ? <EyeOffIcon className="size-4" aria-hidden /> : <EyeIcon className="size-4" aria-hidden />}
+            {revealed ? <EyeOffIcon className="size-5" aria-hidden /> : <EyeIcon className="size-5" aria-hidden />}
           </button>
         )}
       </div>

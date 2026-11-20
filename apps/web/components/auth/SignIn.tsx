@@ -1,6 +1,5 @@
 "use client";
 
-import { GraduationCapIcon, PresentationIcon } from "lucide-react";
 import { useState } from "react";
 import { intendedRoleFor } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
@@ -19,26 +18,29 @@ export function SignIn() {
   const [picked, setPicked] = useState<Choice | null>(null);
   const choice: Choice = picked ?? (intended === "TEACHER" ? "grownup" : "student");
 
-  const option = (value: Choice, label: string, Icon: typeof GraduationCapIcon) => (
+  const option = (value: Choice, label: string, hint: string, emoji: string) => (
     <button
       type="button"
       onClick={() => setPicked(value)}
       aria-pressed={choice === value}
       className={cn(
-        "flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 px-2 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-base",
-        choice === value ? "border-primary bg-primary/10 text-foreground" : "border-transparent bg-muted text-muted-foreground hover:text-foreground",
+        "relative flex flex-col items-center justify-center gap-1 rounded-2xl border-2 px-2 py-3 text-center outline-none transition-all focus-visible:ring-4 focus-visible:ring-ring/40",
+        choice === value
+          ? "-translate-y-0.5 border-primary bg-accent text-accent-foreground shadow-[0_4px_0_var(--primary)]"
+          : "border-border bg-background text-muted-foreground shadow-[0_4px_0_var(--border)] hover:bg-muted hover:text-foreground",
       )}
     >
-      <Icon className="size-5 shrink-0" aria-hidden />
-      {label}
+      <span aria-hidden className="text-3xl leading-none">{emoji}</span>
+      <span className="text-base font-extrabold">{label}</span>
+      <span className="text-xs font-semibold opacity-80">{hint}</span>
     </button>
   );
 
   return (
     <>
-      <div role="group" aria-label="Who is signing in?" className="mb-5 grid grid-cols-2 gap-2">
-        {option("student", "I’m a student", GraduationCapIcon)}
-        {option("grownup", "Grown-up / Teacher", PresentationIcon)}
+      <div role="group" aria-label="Who is signing in? Student, or grown-up or teacher" className="mb-6 grid grid-cols-2 gap-3 pb-1">
+        {option("student", "I’m a student", "Username + PIN", "🧒")}
+        {option("grownup", "Grown-up", "Teacher · email", "🧑‍🏫")}
       </div>
       {choice === "student" ? <StudentLoginForm key="student" /> : <LoginForm key="grownup" />}
     </>

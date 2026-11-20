@@ -2,11 +2,13 @@
 
 import { PrinterIcon } from "lucide-react";
 import { useEffect } from "react";
-import { recordPrint } from "@/app/(app)/student/parent/actions";
 import { Button } from "@/components/ui/button";
 
-/** Opens every "examples" disclosure before printing (closed <details> would print empty) and puts them back after. */
-export function PrintButton() {
+/**
+ * Opens every "examples" disclosure before printing (closed <details> would print empty) and puts them back after.
+ * `onPrint` is the page's server action that writes REPORT_PRINT to the access log.
+ */
+export function PrintButton({ onPrint }: { onPrint: () => Promise<void> }) {
   useEffect(() => {
     let reopened: HTMLDetailsElement[] = [];
     const before = () => {
@@ -30,7 +32,7 @@ export function PrintButton() {
       type="button"
       variant="outline"
       onClick={() => {
-        void recordPrint();
+        void onPrint();
         window.print();
       }}
     >

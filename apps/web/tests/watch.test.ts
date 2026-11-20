@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { PUT as enableRoute, DELETE as disableRoute } from "@/app/api/videos/[id]/share/route";
 import { POST as answerRoute } from "@/app/api/public/videos/[shareId]/interactions/[interactionId]/answer/route";
 import { createSession } from "@/lib/auth/session";
 import { createInteraction } from "@/lib/interactions/service";
@@ -26,8 +25,6 @@ describe("public sharing and answers", () => {
     const u = await db.orm.public.User.create({ name: label, email, password: "x", role: "TEACHER" });
     return { id: u.id, token: (await createSession(u.id)).token };
   }
-  const authed = (method: string, path: string, token: string) =>
-    new Request(ORIGIN + path, { method, headers: { authorization: `Bearer ${token}` } });
   const answer = (shareId: string, interactionId: number | string, body: unknown, headers: Record<string, string> = {}) =>
     answerRoute(
       new Request(`${ORIGIN}/x`, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body) }),
@@ -72,16 +69,10 @@ describe("public sharing and answers", () => {
     expect(await getPublicVideo("A".repeat(16))).toBeNull();
   });
 
-  it("only the owner can enable or disable; the token is unguessable and stable", async () => {
-    const p = params({ id: String(videoId) });
-    expect((await enableRoute(authed("PUT", "/x", tokenOther), p)).status).toBe(404);
-    expect((await disableRoute(authed("DELETE", "/x", tokenOther), p)).status).toBe(404);
-    expect((await enableRoute(new Request(ORIGIN + "/x", { method: "PUT" }), p)).status).toBe(401);
-
-    const res = await enableRoute(authed("PUT", "/x", tokenOwner), p);
-    const { shareId } = await res.json();
+  it("sharing is owner-only (done by the seed now; no teacher UI); the token is unguessable and stable", async () => {
+    await expect(enableSharing(owner + 1_000_000, videoId)).rejects.toMatchObject({ code: "NOT_FOUND" });
+    const shareId = await enableSharing(owner, videoId);
     expect(shareId).toMatch(/^[A-Za-z0-9_-]{16}$/);
-    expect(await enableSharing(owner, videoId)).toBe(shareId);
     const [x, y] = await Promise.all([enableSharing(owner, videoId), enableSharing(owner, videoId)]);
     expect(x).toBe(shareId);
     expect(y).toBe(shareId);
@@ -130,18 +121,6 @@ describe("public sharing and answers", () => {
     // validation still applies for a fresh question
     expect((await answer(shareId, surveyId, {}, as)).status).toBe(400);
     expect((await answer(shareId, surveyId, { optionId: "1" }, as)).status).toBe(400);
-  });
-
-  it("revoking stops access at once and re-enabling issues a new token", async () => {
-    const p = params({ id: String(videoId) });
-    const old = (await db.orm.public.Video.where({ id: videoId }).first())!.shareId as string;
-    expect((await disableRoute(authed("DELETE", "/x", tokenOwner), p)).status).toBe(200);
-    expect(await getPublicVideo(old)).toBeNull();
-    expect((await answer(old, quizId, { optionId: correctId })).status).toBe(404);
-    const { shareId } = await (await enableRoute(authed("PUT", "/x", tokenOwner), p)).json();
-    expect(shareId).not.toBe(old);
-    expect(await getPublicVideo(old)).toBeNull();
-    expect(await getPublicVideo(shareId)).not.toBeNull();
   });
 
   it("rate limits bursts per client", () => {

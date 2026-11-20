@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createInteraction, updateInteraction } from "@/lib/interactions/service";
 import { normalizeAnswer, validateInteraction } from "@/lib/interactions/model";
-import { getResponseSummary, responsesToCsv } from "@/lib/responses/service";
 import { checkPublicAnswer, enableSharing, getPublicVideo } from "@/lib/watch/service";
 import { db } from "@/prisma/db";
 
@@ -75,7 +74,7 @@ describe("text answers", () => {
       await expect(checkPublicAnswer(shareId, quizId, { text: "Paris" })).rejects.toMatchObject({ code: "UNAUTHENTICATED" }); // anonymous
     });
 
-    it("stores typed answers for signed-in viewers (latest stands) and summarises them", async () => {
+    it("stores typed answers for signed-in viewers (latest stands)", async () => {
       await checkPublicAnswer(shareId, quizId, { text: "Rome" }, viewer);
       await checkPublicAnswer(shareId, quizId, { text: "paris" }, viewer); // answering again replaces it (latest wins)
       await checkPublicAnswer(shareId, surveyId, { text: "Loved it, <b>great</b>" }, viewer);
@@ -83,14 +82,9 @@ describe("text answers", () => {
       expect(rows).toHaveLength(2);
       expect(rows.every((r) => r.selectedOptionId === null && r.isSkipped === false && r.textAnswer !== null)).toBe(true);
 
-      const s = await getResponseSummary(owner, videoId);
-      const survey = s.interactions.find((i) => i.id === surveyId)!;
-      const quiz = s.interactions.find((i) => i.id === quizId)!;
-      expect(survey.textAnswers).toEqual([{ text: "Loved it, <b>great</b>", name: "txt-viewer", correct: null }]);
-      expect(quiz.textAnswers[0]).toMatchObject({ text: "paris", correct: true });
-      expect(quiz.correctRate).toBe(1);
-      expect(s.respondents[0]).toMatchObject({ answered: 2, correct: 1 });
-      expect(responsesToCsv(s)).toContain("Loved it");
+      const quizRow = rows.find((r) => r.interactionId === quizId)!;
+      expect(quizRow.textAnswer).toBe("paris");
+      expect(quizRow.attemptCount).toBe(2);
     });
 
     it("the database refuses a response carrying both an option and text", async () => {

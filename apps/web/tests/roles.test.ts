@@ -2,13 +2,9 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { POST as login } from "@/app/api/auth/login/route";
 import { GET as me } from "@/app/api/auth/me/route";
-import { GET as listInteractions } from "@/app/api/interactions/route";
 import { GET as listVideos } from "@/app/api/videos/route";
 import { GET as getVideo, PATCH as patchVideo } from "@/app/api/videos/[id]/route";
 import { POST as createInteraction } from "@/app/api/videos/[id]/interactions/route";
-import { PUT as share } from "@/app/api/videos/[id]/share/route";
-import { PUT as listing } from "@/app/api/videos/[id]/listing/route";
-import { GET as responses } from "@/app/api/videos/[id]/responses/route";
 import { hashPassword } from "@/lib/auth/password";
 import { canAccessPath, homePathFor, intendedRoleFor, postAuthPath, welcomePathFor } from "@/lib/auth/roles";
 import { createSession } from "@/lib/auth/session";
@@ -31,7 +27,7 @@ describe("role routing (pure)", () => {
 
   it("honours a safe next only when the role may open it", () => {
     expect(postAuthPath("STUDENT", "/watch/abc")).toBe("/watch/abc");
-    expect(postAuthPath("STUDENT", "/library")).toBe("/library");
+    expect(postAuthPath("STUDENT", "/settings")).toBe("/settings");
     expect(postAuthPath("STUDENT", "/student/journeys")).toBe("/student/journeys");
     expect(postAuthPath("STUDENT", "/student/parent")).toBe("/student/parent");
     expect(postAuthPath("TEACHER", "/videos/12")).toBe("/videos/12");
@@ -39,7 +35,7 @@ describe("role routing (pure)", () => {
   });
 
   it("never lets next cross a role boundary", () => {
-    const teacherOnly = ["/dashboard", "/upload", "/videos", "/videos/1", "/surveys", "/quizzes", "/responses", "/responses/3", "/dashboard?x=1", "/videos#a"];
+    const teacherOnly = ["/dashboard", "/upload", "/videos", "/videos/1", "/dashboard?x=1", "/videos#a", "/modules", "/modules/4", "/journeys", "/students", "/students/7"];
     for (const next of teacherOnly) expect(postAuthPath("STUDENT", next)).toBe("/student");
     // Teachers are blocked from every student route, including the grown-ups placeholder.
     for (const next of ["/student", "/student/journeys", "/student/virtues", "/student/profile", "/student/parent", "/student/parent?x=1", "/welcome"]) {
@@ -75,14 +71,14 @@ describe("role routing (pure)", () => {
     expect(intendedRoleFor("/welcome")).toBe("STUDENT");
     expect(intendedRoleFor("/dashboard")).toBe("TEACHER");
     expect(intendedRoleFor("/videos/4")).toBe("TEACHER");
-    // /library is shared now (students no longer start there), so it says nothing about who is signing in.
-    for (const next of [null, undefined, "", "/library", "/watch/abc", "/settings", "//evil.com", "https://evil.com"]) expect(intendedRoleFor(next)).toBeNull();
+    // Shared routes say nothing about who is signing in.
+    for (const next of [null, undefined, "", "/settings", "/watch/abc", "/settings", "//evil.com", "https://evil.com"]) expect(intendedRoleFor(next)).toBeNull();
   });
 
   it("routes new students through the welcome step, then on to a safe destination", () => {
     expect(welcomePathFor("STUDENT", undefined)).toBe("/welcome");
     expect(welcomePathFor("STUDENT", "/student")).toBe("/welcome");
-    expect(welcomePathFor("STUDENT", "/library")).toBe("/welcome?next=%2Flibrary");
+    expect(welcomePathFor("STUDENT", "/settings")).toBe("/welcome?next=%2Fsettings");
     expect(welcomePathFor("STUDENT", "/watch/abc")).toBe("/welcome?next=%2Fwatch%2Fabc");
     // Cannot be steered into teacher pages or off-site, and teachers never see the student welcome.
     expect(welcomePathFor("STUDENT", "/dashboard")).toBe("/welcome");
@@ -94,7 +90,7 @@ describe("role routing (pure)", () => {
 
   it("does not over-match look-alike prefixes", () => {
     expect(canAccessPath("STUDENT", "/videos-archive")).toBe(true);
-    expect(canAccessPath("STUDENT", "/library")).toBe(true);
+    expect(canAccessPath("STUDENT", "/settings")).toBe(true);
     expect(canAccessPath("STUDENT", "/settings")).toBe(true);
     expect(canAccessPath("TEACHER", "/homework")).toBe(true);
   });
@@ -144,13 +140,9 @@ describe("role enforcement on the API and in the database", () => {
     const id = String(videoId);
     const calls = [
       () => listVideos(authed("GET", "/api/videos", tokens.student)),
-      () => listInteractions(authed("GET", "/api/interactions", tokens.student)),
       () => getVideo(authed("GET", `/api/videos/${id}`, tokens.student), params({ id })),
       () => patchVideo(authed("PATCH", `/api/videos/${id}`, tokens.student, { title: "x" }), params({ id })),
       () => createInteraction(authed("POST", `/api/videos/${id}/interactions`, tokens.student, {}), params({ id })),
-      () => share(authed("PUT", `/api/videos/${id}/share`, tokens.student), params({ id })),
-      () => listing(authed("PUT", `/api/videos/${id}/listing`, tokens.student, { listed: true }), params({ id })),
-      () => responses(authed("GET", `/api/videos/${id}/responses`, tokens.student), params({ id })),
     ];
     for (const call of calls) {
       const res = await call();
@@ -163,7 +155,6 @@ describe("role enforcement on the API and in the database", () => {
   it("keeps the teacher API working, and anonymous callers get 401 not 403", async () => {
     const id = String(videoId);
     expect((await listVideos(authed("GET", "/api/videos", tokens.teacher))).status).toBe(200);
-    expect((await listInteractions(authed("GET", "/api/interactions", tokens.teacher))).status).toBe(200);
     expect((await getVideo(authed("GET", `/api/videos/${id}`, tokens.teacher), params({ id }))).status).toBe(200);
     expect((await listVideos(new Request(`${ORIGIN}/api/videos`))).status).toBe(401);
   });

@@ -40,7 +40,7 @@ export const requireTeacher = () => requireRole("TEACHER");
 export const requireStudent = () => requireRole("STUDENT");
 
 /**
- * For guest-only pages (login/register): sends signed-in users on, to the validated `next` when their role may open it,
+ * For guest-only pages (login): sends signed-in users on, to the validated `next` when their role may open it,
  * otherwise to their role's home.
  */
 export async function redirectIfAuthenticated(rawNext?: string | null): Promise<void> {

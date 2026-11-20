@@ -67,8 +67,7 @@ export function StudentLoginForm() {
             spellCheck={false}
             maxLength={20}
             autoFocus
-            className="h-12 text-base"
-            error={form.errors.username}
+                        error={form.errors.username}
           />
           <PinPad value={pin} onChange={onPinChange} disabled={form.submitting} />
           <p role="status" className="min-h-5 text-center text-sm text-muted-foreground">

@@ -11,10 +11,13 @@ export const metadata: Metadata = { title: "Upload Video" };
 export default function UploadPage() {
   return (
     <>
-      <PageHeader title="Upload Video" description="Add a video, then place surveys and quizzes on its timeline." />
+      <PageHeader
+        title="Upload a story video"
+        description="Upload the video first. Then turn it into a story module (virtues, learning objective, notes for grown-ups) and add questions on its timeline."
+      />
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>New video</CardTitle>
+          <CardTitle className="text-xl font-extrabold">New video</CardTitle>
           <CardDescription>MP4, WebM or MOV, up to 512 MB.</CardDescription>
         </CardHeader>
         <CardContent>

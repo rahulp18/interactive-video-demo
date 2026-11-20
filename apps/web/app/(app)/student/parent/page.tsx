@@ -4,12 +4,15 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ParentGate } from "@/components/student/parent/ParentGate";
+import { PrintButton } from "@/components/student/parent/PrintButton";
 import { ReportView } from "@/components/student/parent/ReportView";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/config";
 import { requireStudent } from "@/lib/auth/server";
 import { openParentReport } from "@/lib/reports/access";
 import { hasGatePass } from "@/lib/reports/gate";
+import { leaveParentZone, recordPrint } from "./actions";
 
 export const metadata: Metadata = { title: "For grown-ups" };
 
@@ -35,5 +38,21 @@ async function Gated() {
   if (!token) redirect("/login");
   if (!(await hasGatePass(token))) return <ParentGate />;
   const { report, access } = await openParentReport(user.id, token);
-  return <ReportView report={report} access={access} />;
+  return (
+    <ReportView
+      report={report}
+      access={access}
+      audience="parent"
+      toolbar={
+        <>
+          <form action={leaveParentZone}>
+            <Button type="submit" variant="outline">
+              Back to {report.child.name}&apos;s app
+            </Button>
+          </form>
+          <PrintButton onPrint={recordPrint} />
+        </>
+      }
+    />
+  );
 }

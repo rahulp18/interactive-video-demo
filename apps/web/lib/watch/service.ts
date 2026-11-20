@@ -26,57 +26,6 @@ export async function enableSharing(userId: number, videoId: number): Promise<st
   return after.shareId;
 }
 
-/** Revokes the public link immediately; enabling again issues a different token. Owner only. */
-export async function disableSharing(userId: number, videoId: number): Promise<void> {
-  await getVideo(userId, videoId);
-  await db.orm.public.Video.where({ id: videoId, uploaderId: userId }).updateAll({ shareId: null, isListed: false });
-}
-
-/** Lists or unlists the video in the platform Library (listing needs a public link, which it creates if missing). */
-export async function setListed(userId: number, videoId: number, listed: boolean): Promise<{ shareId: string | null; isListed: boolean }> {
-  const shareId = listed ? await enableSharing(userId, videoId) : (await getVideo(userId, videoId)).shareId;
-  await db.orm.public.Video.where({ id: videoId, uploaderId: userId }).updateAll({ isListed: listed });
-  return { shareId, isListed: listed };
-}
-
-export type LibraryItem = {
-  shareId: string;
-  title: string;
-  fileUrl: string;
-  duration: number;
-  createdAt: string;
-  author: string;
-  interactionCount: number;
-};
-
-/** Videos their owners listed in the Library, newest first. Only listed videos with a live link are ever returned. */
-export async function listLibrary(): Promise<LibraryItem[]> {
-  const rows = await db.orm.public.Video.where({ isListed: true })
-    .where((v) => v.shareId.isNotNull())
-    .orderBy([(v) => v.createdAt.desc(), (v) => v.id.desc()])
-    .include("uploader", (u) => u.select("name"))
-    .include("interactions", (i) => i.count())
-    .all();
-  return rows.flatMap((v) =>
-    v.shareId
-      ? [{ shareId: v.shareId, title: v.title, fileUrl: v.fileUrl, duration: v.duration, createdAt: v.createdAt.toISOString(), author: v.uploader?.name ?? "Unknown", interactionCount: v.interactions }]
-      : [],
-  );
-}
-
-/** Interactions this signed-in viewer already answered or skipped on a shared video, so they are not asked twice. */
-export async function getViewerAnsweredIds(userId: number, shareId: string): Promise<number[]> {
-  if (!isShareId(shareId)) return [];
-  const video = await db.orm.public.Video.where({ shareId }).first();
-  if (!video) return [];
-  const interactions = await db.orm.public.Interaction.where({ videoId: video.id }).all();
-  if (interactions.length === 0) return [];
-  const ids = interactions.map((i) => i.id);
-  const mine = await db.orm.public.InteractionResponse.where({ userId }).where((r) => r.interactionId.in(ids)).all();
-  return mine.map((r) => r.interactionId);
-}
-
-/** What a viewer may see. Deliberately has no `isCorrect`, no uploader and no file metadata beyond playback. */
 export type PublicInteraction = {
   id: number;
   timestamp: number;

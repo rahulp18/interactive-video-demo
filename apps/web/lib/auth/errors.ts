@@ -8,6 +8,7 @@ export type AuthErrorCode =
   | "EMAIL_TAKEN"
   | "FORBIDDEN_ORIGIN"
   | "FORBIDDEN"
+  | "REGISTRATION_CLOSED"
   | "NOT_FOUND"
   | "CONFLICT"
   | "RATE_LIMITED"
@@ -23,6 +24,7 @@ const STATUS: Record<AuthErrorCode, number> = {
   EMAIL_TAKEN: 409,
   FORBIDDEN_ORIGIN: 403,
   FORBIDDEN: 403,
+  REGISTRATION_CLOSED: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
   RATE_LIMITED: 429,

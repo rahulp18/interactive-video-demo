@@ -1,15 +1,12 @@
 import { ArrowDownRightIcon, ArrowRightIcon, ArrowUpRightIcon, ChevronRightIcon, ShieldAlertIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import { leaveParentZone } from "@/app/(app)/student/parent/actions";
 import { plottedComposite } from "@/lib/reports/report-rules";
 import { avatarFor } from "@/lib/student/avatars";
 import type { AuditEntry, ParentReport, ReportSwotItem, ReportVirtueRow } from "@/lib/reports/types";
 import { VIRTUE_DISPLAY } from "@/lib/virtues/display";
 import { cn } from "@/lib/utils";
 import { BAR_PATTERN, CONFIDENCE_LABEL, SERIES, fmtDate, fmtDateTime } from "./format";
-import { PrintButton } from "./PrintButton";
 import { Radar } from "./Radar";
 import { TrendExplorer } from "./TrendExplorer";
 
@@ -159,8 +156,26 @@ function Mark({ mark }: { mark: "NONE" | "STRENGTH" | "IMPROVE" }) {
   return <>{mark === "STRENGTH" ? "Strength" : mark === "IMPROVE" ? "To work on" : "—"}</>;
 }
 
-export function ReportView({ report, access }: { report: ParentReport; access: AuditEntry[] }) {
+/** Who is reading. The report itself is the same; a few labels and links differ. */
+export type ReportAudience = "parent" | "teacher";
+
+/**
+ * The adult-facing report. `toolbar` holds the page's own actions (the parent preview: "Back to <name>'s app" + print;
+ * the teacher view: back link + print), shown above the header and hidden in print.
+ */
+export function ReportView({
+  report,
+  access,
+  toolbar,
+  audience = "parent",
+}: {
+  report: ParentReport;
+  access: AuditEntry[];
+  toolbar?: ReactNode;
+  audience?: ReportAudience;
+}) {
   const child = report.child.name;
+  const teacher = audience === "teacher";
   const avatar = avatarFor(report.child.avatar);
   const { swot, nextSteps, parentInputs } = report;
   const axes = report.virtues.map((v) => ({
@@ -183,20 +198,13 @@ export function ReportView({ report, access }: { report: ParentReport; access: A
     <div className="adult-report space-y-8 rounded-2xl border p-4 sm:p-6">
       {/* 1. Header, with the disclaimer up front */}
       <header className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3 print:hidden">
-          <form action={leaveParentZone}>
-            <Button type="submit" variant="outline">
-              Back to {child}&apos;s app
-            </Button>
-          </form>
-          <PrintButton />
-        </div>
+        {toolbar && <div className="flex flex-wrap items-start justify-between gap-3 print:hidden">{toolbar}</div>}
         <div className="flex items-center gap-3">
           <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-muted text-3xl" aria-hidden>
             {avatar?.emoji ?? child.slice(0, 1)}
           </span>
           <div>
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Parent preview</p>
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{teacher ? "Teacher view" : "Parent preview"}</p>
             <h1 className="text-2xl font-bold tracking-tight">{child}&apos;s PARICHAY report</h1>
             <p className="text-sm text-muted-foreground">
               As of {fmtDate(report.asOf)} · Scoring rules {report.ruleVersion}
@@ -210,7 +218,9 @@ export function ReportView({ report, access }: { report: ParentReport; access: A
           </p>
         </div>
         <p className="text-xs text-muted-foreground">
-          This is a preview inside {child}&apos;s own account. In the full product, parents and carers have their own dashboard.
+          {teacher
+            ? `You can see this report because ${child} has used your story modules. Opening or printing it is written to the access log at the bottom, which the family can also see.`
+            : `This is a preview inside ${child}'s own account. In the full product, parents and carers have their own dashboard.`}
         </p>
       </header>
 
@@ -281,9 +291,13 @@ export function ReportView({ report, access }: { report: ParentReport; access: A
               <ul className="mt-2 space-y-2 text-sm">
                 {nextSteps.stories.map((s) => (
                   <li key={s.moduleId}>
-                    <Link href={`/student/modules/${s.moduleId}`} className="font-medium underline underline-offset-4">
-                      {s.title}
-                    </Link>{" "}
+                    {teacher ? (
+                      <span className="font-medium">{s.title}</span>
+                    ) : (
+                      <Link href={`/student/modules/${s.moduleId}`} className="font-medium underline underline-offset-4">
+                        {s.title}
+                      </Link>
+                    )}{" "}
                     <span className="text-muted-foreground">
                       · {s.virtueName}
                       {s.completed ? " · already watched" : ""}
@@ -294,7 +308,7 @@ export function ReportView({ report, access }: { report: ParentReport; access: A
             )}
           </div>
           <div className="print-avoid-break rounded-xl border bg-card p-4">
-            <h3 className="font-semibold">Activities to do at home</h3>
+            <h3 className="font-semibold">{teacher ? "Follow-up activities" : "Activities to do at home"}</h3>
             {nextSteps.stories.length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">No suggestions yet.</p>
             ) : (
@@ -308,7 +322,7 @@ export function ReportView({ report, access }: { report: ParentReport; access: A
             )}
           </div>
           <div className="print-avoid-break rounded-xl border bg-card p-4 md:col-span-2">
-            <h3 className="font-semibold">Questions to talk about together</h3>
+            <h3 className="font-semibold">{teacher ? "Discussion questions for class or home" : "Questions to talk about together"}</h3>
             {nextSteps.questions.length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">No suggestions yet.</p>
             ) : (
@@ -323,7 +337,7 @@ export function ReportView({ report, access }: { report: ParentReport; access: A
           </div>
           {nextSteps.experts.length > 0 && (
             <div className="print-avoid-break rounded-xl border bg-card p-4 md:col-span-2">
-              <h3 className="font-semibold">If it continues, you might consider talking to someone</h3>
+              <h3 className="font-semibold">{teacher ? "If it continues, the family might consider talking to someone" : "If it continues, you might consider talking to someone"}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 These areas have stayed on the lower side across more than one reading. This is only a suggestion; there is nothing to book here, and it is not a diagnosis.
               </p>

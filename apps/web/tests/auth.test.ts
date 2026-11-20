@@ -58,7 +58,23 @@ afterAll(async () => {
   await db.close();
 });
 
+// The route is closed unless this opt-in is set; the tests below exercise the open path.
+vi.stubEnv("ALLOW_PUBLIC_REGISTRATION", "true");
+
 describe("register", () => {
+  it("is closed by default: students are created by teachers, not by public sign-up", async () => {
+    vi.stubEnv("ALLOW_PUBLIC_REGISTRATION", "");
+    try {
+      const email = uniqueEmail();
+      const res = await register(post("/api/auth/register", { name: "Nope", email, password: PASSWORD }));
+      expect(res.status).toBe(403);
+      expect((await res.json()).error.code).toBe("REGISTRATION_CLOSED");
+      expect(await db.orm.public.User.where({ email }).first()).toBeNull();
+    } finally {
+      vi.stubEnv("ALLOW_PUBLIC_REGISTRATION", "true");
+    }
+  });
+
   it("creates a user and never returns the password or its hash", async () => {
     const { email, res } = await makeUser({ name: "  Ada   Lovelace " });
     expect(res.status).toBe(201);

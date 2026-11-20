@@ -6,8 +6,12 @@ import {
   sortInteractions,
   type AnswerType,
   validateInteraction,
+  type EditorModule,
+  type EditorModuleVirtue,
   type InteractionDTO,
   type InteractionType,
+  type OptionWeights,
+  type PresentationStyle,
 } from "./model";
 
 type OptionRow = { id: number; text: string; isCorrect: boolean; position: number };
@@ -17,6 +21,7 @@ type InteractionRow = {
   timestamp: number;
   type: string;
   answerType: string;
+  presentationStyle: string;
   correctAnswer: string | null;
   question: string;
   isSkippable: boolean;
@@ -24,20 +29,38 @@ type InteractionRow = {
   options: OptionRow[];
 };
 
-const toDTO = (r: InteractionRow): InteractionDTO => ({
+type WeightMap = ReadonlyMap<number, OptionWeights>;
+
+const toDTO = (r: InteractionRow, weights: WeightMap): InteractionDTO => ({
   id: r.id,
   videoId: r.videoId,
   timestamp: r.timestamp,
   type: r.type as InteractionType,
   answerType: r.answerType as AnswerType,
+  presentationStyle: r.presentationStyle as PresentationStyle,
   correctAnswer: r.correctAnswer,
   question: r.question,
   isSkippable: r.isSkippable,
   position: r.position,
   options: [...r.options]
     .sort((a, b) => a.position - b.position)
-    .map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect, position: o.position })),
+    .map((o) => ({ id: o.id, text: o.text, isCorrect: o.isCorrect, position: o.position, weights: { ...(weights.get(o.id) ?? {}) } })),
 });
+
+/** optionId -> { virtueId: weight } for the given options (one query). */
+async function loadWeights(rows: readonly InteractionRow[]): Promise<WeightMap> {
+  const optionIds = rows.flatMap((r) => r.options.map((o) => o.id));
+  const out = new Map<number, OptionWeights>();
+  if (optionIds.length === 0) return out;
+  const weightRows = await db.orm.public.OptionVirtueWeight.where((w) => w.optionId.in(optionIds)).all();
+  for (const w of weightRows) out.set(w.optionId, { ...(out.get(w.optionId) ?? {}), [w.virtueId]: w.weight });
+  return out;
+}
+
+async function toDTOs(rows: readonly InteractionRow[]): Promise<InteractionDTO[]> {
+  const weights = await loadWeights(rows);
+  return rows.map((r) => toDTO(r, weights));
+}
 
 // Postgres foreign_key_violation (SQLSTATE 23503): an option that already has responses cannot be removed.
 function isForeignKeyViolation(error: unknown): boolean {
@@ -48,22 +71,58 @@ function isForeignKeyViolation(error: unknown): boolean {
 
 const validationError = (errors: Record<string, string>) => new AuthError("VALIDATION_ERROR", "Invalid request.", errors);
 
+/** The story module behind a video (primary virtue first, then secondaries in order), or null for a plain video. */
+async function moduleOfVideo(videoId: number): Promise<EditorModule | null> {
+  const mod = await db.orm.public.Module.where({ videoId }).first();
+  if (!mod) return null;
+  const [secondary, virtues] = await Promise.all([
+    db.orm.public.ModuleSecondaryVirtue.where({ moduleId: mod.id }).all(),
+    db.orm.public.Virtue.all(),
+  ]);
+  const virtueOf = new Map(virtues.map((v) => [v.id, v]));
+  const ids: { id: number; role: EditorModuleVirtue["role"] }[] = [
+    { id: mod.primaryVirtueId, role: "primary" },
+    ...[...secondary].sort((a, b) => a.position - b.position).map((s) => ({ id: s.virtueId, role: "secondary" as const })),
+  ];
+  return {
+    moduleId: mod.id,
+    status: mod.status as EditorModule["status"],
+    virtues: ids.flatMap(({ id, role }) => {
+      const v = virtueOf.get(id);
+      return v ? [{ id: v.id, slug: v.slug, name: v.name, role }] : [];
+    }),
+  };
+}
+
+/** Module context for the editor of a video the caller owns (ownership is checked first). */
+export async function getEditorModule(userId: number, videoId: number): Promise<EditorModule | null> {
+  await getVideo(userId, videoId);
+  return moduleOfVideo(videoId);
+}
+
 /** Interactions of a video the caller owns (ownership is checked first), sorted by timestamp. */
 export async function listVideoInteractions(userId: number, videoId: number): Promise<InteractionDTO[]> {
   await getVideo(userId, videoId);
   const rows = await db.orm.public.Interaction.where({ videoId }).include("options").all();
-  return sortInteractions(rows.map(toDTO));
+  return sortInteractions(await toDTOs(rows));
 }
 
 async function readInteraction(videoId: number, id: number): Promise<InteractionDTO> {
   const row = await db.orm.public.Interaction.where({ id, videoId }).include("options").first();
   if (!row) throw new AuthError("NOT_FOUND", "Interaction not found.");
-  return toDTO(row);
+  return (await toDTOs([row]))[0];
+}
+
+/** Validation context derived on the server from the video itself; the client never says whether it is a module. */
+async function contextFor(videoId: number) {
+  const mod = await moduleOfVideo(videoId);
+  return { mod, ctx: mod ? { moduleVirtueIds: mod.virtues.map((v) => v.id) } : {} };
 }
 
 export async function createInteraction(userId: number, videoId: number, body: unknown): Promise<InteractionDTO> {
   const video = await getVideo(userId, videoId);
-  const parsed = validateInteraction(body, video.duration);
+  const { mod, ctx } = await contextFor(videoId);
+  const parsed = validateInteraction(body, video.duration, ctx);
   if (parsed.errors) throw validationError(parsed.errors);
   const input = parsed.value;
   if (input.options.some((o) => o.id !== undefined)) {
@@ -78,16 +137,19 @@ export async function createInteraction(userId: number, videoId: number, body: u
       timestamp: input.timestamp,
       type: input.type,
       answerType: input.answerType,
+      ...(mod && { presentationStyle: input.presentationStyle }),
       correctAnswer: input.correctAnswer,
       question: input.question,
       isSkippable: input.isSkippable,
       position: tied.length,
     });
-    if (input.options.length > 0) {
-      await tx.orm.public.InteractionOption.createAll(
-        input.options.map((o, position) => ({ interactionId: created.id, text: o.text, isCorrect: o.isCorrect, position })),
-      );
+    const weightRows: { optionId: number; virtueId: number; weight: number }[] = [];
+    for (const [position, o] of input.options.entries()) {
+      // One create per option (at most 8) so each new id is known for its weight rows.
+      const option = await tx.orm.public.InteractionOption.create({ interactionId: created.id, text: o.text, isCorrect: o.isCorrect, position });
+      for (const [virtueId, weight] of Object.entries(o.weights ?? {})) weightRows.push({ optionId: option.id, virtueId: Number(virtueId), weight });
     }
+    if (weightRows.length > 0) await tx.orm.public.OptionVirtueWeight.createAll(weightRows);
     return created.id;
   });
   return readInteraction(videoId, id);
@@ -96,6 +158,8 @@ export async function createInteraction(userId: number, videoId: number, body: u
 /**
  * Replaces an interaction's configuration. Options sent with an `id` are updated in place (so rows that responses
  * point at survive), options without one are created, and existing options that are not sent are deleted.
+ * Story modules: each sent option's weights for the MODULE's virtues are replaced by what was sent; weight rows for any
+ * other virtue (e.g. one that was a secondary virtue before the module changed) are left as they are.
  */
 export async function updateInteraction(
   userId: number,
@@ -104,7 +168,8 @@ export async function updateInteraction(
   body: unknown,
 ): Promise<InteractionDTO> {
   const video = await getVideo(userId, videoId);
-  const parsed = validateInteraction(body, video.duration);
+  const { mod, ctx } = await contextFor(videoId);
+  const parsed = validateInteraction(body, video.duration, ctx);
   if (parsed.errors) throw validationError(parsed.errors);
   const input = parsed.value;
 
@@ -117,6 +182,7 @@ export async function updateInteraction(
   }
   const keptIds = new Set(input.options.flatMap((o) => (o.id === undefined ? [] : [o.id])));
   const removedIds = existing.options.filter((o) => !keptIds.has(o.id)).map((o) => o.id);
+  const moduleVirtueIds = ctx.moduleVirtueIds ? [...ctx.moduleVirtueIds] : [];
 
   let position = existing.position;
   if (existing.timestamp !== input.timestamp) {
@@ -130,6 +196,8 @@ export async function updateInteraction(
         timestamp: input.timestamp,
         type: input.type,
         answerType: input.answerType,
+        // Plain videos keep whatever style they have (the editor does not show the field for them).
+        ...(mod && { presentationStyle: input.presentationStyle }),
         correctAnswer: input.correctAnswer,
         question: input.question,
         isSkippable: input.isSkippable,
@@ -143,6 +211,10 @@ export async function updateInteraction(
       for (const o of existing.options.filter((o) => keptIds.has(o.id))) {
         await tx.orm.public.InteractionOption.where({ id: o.id }).updateAll({ position: PARK + o.position });
       }
+      const weightRows: { optionId: number; virtueId: number; weight: number }[] = [];
+      const addWeights = (optionId: number, weights: OptionWeights | undefined) => {
+        for (const [virtueId, weight] of Object.entries(weights ?? {})) weightRows.push({ optionId, virtueId: Number(virtueId), weight });
+      };
       for (const [index, o] of input.options.entries()) {
         if (o.id !== undefined) {
           await tx.orm.public.InteractionOption.where({ id: o.id }).updateAll({
@@ -150,14 +222,19 @@ export async function updateInteraction(
             isCorrect: o.isCorrect,
             position: index,
           });
+          addWeights(o.id, o.weights);
+        } else {
+          const option = await tx.orm.public.InteractionOption.create({ interactionId, text: o.text, isCorrect: o.isCorrect, position: index });
+          addWeights(option.id, o.weights);
         }
       }
-      const added = input.options.flatMap((o, index) => (o.id === undefined ? [{ o, index }] : []));
-      if (added.length > 0) {
-        await tx.orm.public.InteractionOption.createAll(
-          added.map(({ o, index }) => ({ interactionId, text: o.text, isCorrect: o.isCorrect, position: index })),
-        );
+      if (mod && keptIds.size > 0 && moduleVirtueIds.length > 0) {
+        const kept = [...keptIds];
+        await tx.orm.public.OptionVirtueWeight.where((w) => w.optionId.in(kept))
+          .where((w) => w.virtueId.in(moduleVirtueIds))
+          .deleteAll();
       }
+      if (weightRows.length > 0) await tx.orm.public.OptionVirtueWeight.createAll(weightRows);
     });
   } catch (error) {
     if (isForeignKeyViolation(error)) {
@@ -172,35 +249,4 @@ export async function deleteInteraction(userId: number, videoId: number, interac
   await getVideo(userId, videoId);
   const deleted = await db.orm.public.Interaction.where({ id: interactionId, videoId }).delete();
   if (!deleted) throw new AuthError("NOT_FOUND", "Interaction not found.");
-}
-
-export type InteractionFilter = { type?: InteractionType; q?: string; videoId?: number };
-export type VideoInteractionGroup = {
-  video: { id: number; title: string; duration: number };
-  interactions: InteractionDTO[];
-};
-
-/**
- * The caller's interactions grouped by video (newest video first, interactions by timestamp). A view over existing
- * rows: there are no standalone survey or quiz models. Videos with no matching interaction are omitted.
- */
-export async function listInteractionsByVideo(userId: number, filter: InteractionFilter = {}): Promise<VideoInteractionGroup[]> {
-  const q = filter.q?.trim().toLowerCase();
-  const rows = await db.orm.public.Video.where({ uploaderId: userId })
-    .orderBy([(v) => v.createdAt.desc(), (v) => v.id.desc()])
-    .include("interactions", (i) => i.include("options"))
-    .all();
-
-  return rows
-    .filter((v) => filter.videoId === undefined || v.id === filter.videoId)
-    .map((v) => ({
-      video: { id: v.id, title: v.title, duration: v.duration },
-      interactions: sortInteractions(
-        v.interactions
-          .filter((i) => !filter.type || i.type === filter.type)
-          .filter((i) => !q || i.question.toLowerCase().includes(q))
-          .map(toDTO),
-      ),
-    }))
-    .filter((g) => g.interactions.length > 0);
 }

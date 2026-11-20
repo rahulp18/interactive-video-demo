@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/auth/client";
 import { hasErrors, type FieldErrors } from "@/lib/auth/forms";
@@ -8,12 +7,11 @@ import { postAuthPath, welcomePathFor, type UserRole } from "@/lib/auth/roles";
 import { useNextParam } from "./use-next-param";
 
 /**
- * Shared state machine for the login/register forms:
+ * Shared state machine for the login forms:
  * idle -> (validation errors | submitting) -> (field/form error -> idle | success -> redirect).
  * `submitting` deliberately stays true after success so the form remains locked until the redirect unmounts it.
  */
 export function useAuthForm<K extends string>() {
-  const router = useRouter();
   const rawNext = useNextParam();
   const busy = useRef(false); // synchronous guard: state updates are too late to stop a double Enter/click
   const [errors, setErrors] = useState<FieldErrors<K>>({});
@@ -24,7 +22,7 @@ export function useAuthForm<K extends string>() {
   const [resetKey, setResetKey] = useState(0);
 
   // With cacheComponents, navigating away hides the route (React <Activity>) instead of unmounting it, keeping its
-  // state. Effect cleanups run when it is hidden, so reset here: coming back to /login or /register must show a
+  // state. Effect cleanups run when it is hidden, so reset here: coming back to /login must show a
   // pristine form, never the previous email, password, errors or spinner.
   useLayoutEffect(
     () => () => {
@@ -114,8 +112,11 @@ export function useAuthForm<K extends string>() {
    */
   function succeed(role: UserRole, { firstTime = false } = {}) {
     setSucceeded(true);
-    router.replace(firstTime ? welcomePathFor(role, rawNext) : postAuthPath(role, rawNext)); // replace: the form must not be reachable via Back
-    router.refresh();
+    const target = firstTime ? welcomePathFor(role, rawNext) : postAuthPath(role, rawNext);
+    // A full page load, not router.replace + router.refresh: two client navigations started together could cancel each
+    // other or reuse a router-cache entry made while signed out, leaving a blank page until the next login. A hard
+    // navigation always renders the target fresh with the new session cookie, and `replace` keeps the form out of Back.
+    window.location.replace(target);
   }
 
   return { resetKey, errors, formError, submitting, succeeded, begin, clearError, fail, succeed, focusField };

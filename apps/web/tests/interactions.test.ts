@@ -1,13 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { GET as listInteractions } from "@/app/api/interactions/route";
 import { GET as listVideosRoute } from "@/app/api/videos/route";
 import { DELETE as deleteVideoRoute, GET as getVideoRoute, PATCH as patchVideoRoute } from "@/app/api/videos/[id]/route";
 import { POST as createInteractionRoute } from "@/app/api/videos/[id]/interactions/route";
 import { DELETE as deleteInteractionRoute, PUT as putInteractionRoute } from "@/app/api/videos/[id]/interactions/[interactionId]/route";
 import { createSession } from "@/lib/auth/session";
 import { formatPreciseTimestamp, parseTimestamp, validateInteraction } from "@/lib/interactions/model";
-import { getDashboardStats } from "@/lib/videos/service";
 import { db } from "@/prisma/db";
 
 vi.mock("server-only", () => ({}));
@@ -140,7 +138,6 @@ describe("videos & interactions API", () => {
     expect((await listVideosRoute(req("GET", "/api/videos", null))).status).toBe(401);
     expect((await getVideoRoute(req("GET", `/api/videos/${videoA}`, null), params({ id: String(videoA) }))).status).toBe(401);
     expect((await create(null, videoA, quiz())).status).toBe(401);
-    expect((await listInteractions(req("GET", "/api/interactions", null))).status).toBe(401);
   });
 
   it("rejects cross-origin state changes", async () => {
@@ -240,10 +237,6 @@ describe("videos & interactions API", () => {
 
     const listB = await (await listVideosRoute(req("GET", "/api/videos", tokenB))).json();
     expect(listB.videos.map((v: { id: number }) => v.id)).toEqual([videoB]);
-    const groupsB = await (await listInteractions(req("GET", "/api/interactions", tokenB))).json();
-    expect(groupsB.groups).toEqual([]);
-    const stolen = await (await listInteractions(req("GET", `/api/interactions?videoId=${videoA}`, tokenB))).json();
-    expect(stolen.groups).toEqual([]);
     expect(deleteFiles).not.toHaveBeenCalled();
   });
 
@@ -253,37 +246,11 @@ describe("videos & interactions API", () => {
     }
   });
 
-  it("groups by video and filters by type, search text and video", async () => {
-    const all = await (await listInteractions(req("GET", "/api/interactions", tokenA))).json();
-    expect(all.groups).toHaveLength(1);
-    expect(all.groups[0].video).toMatchObject({ id: videoA, title: "A video" });
-    const stamps = all.groups[0].interactions.map((i: { timestamp: number }) => i.timestamp);
-    expect(stamps).toEqual([...stamps].sort((a, b) => a - b));
-
-    const surveys = await (await listInteractions(req("GET", "/api/interactions?type=SURVEY", tokenA))).json();
-    expect(surveys.groups[0].interactions.map((i: { question: string }) => i.question)).toEqual(["Early"]);
-    const quizzes = await (await listInteractions(req("GET", "/api/interactions?type=QUIZ", tokenA))).json();
-    expect(quizzes.groups[0].interactions.every((i: { type: string }) => i.type === "QUIZ")).toBe(true);
-
-    const search = await (await listInteractions(req("GET", "/api/interactions?q=LATE", tokenA))).json();
-    expect(search.groups[0].interactions.map((i: { question: string }) => i.question)).toEqual(["Late"]);
-    const none = await (await listInteractions(req("GET", "/api/interactions?q=zzzz", tokenA))).json();
-    expect(none.groups).toEqual([]);
-    const pct = await (await listInteractions(req("GET", "/api/interactions?q=%25", tokenA))).json();
-    expect(pct.groups).toEqual([]);
-    expect((await listInteractions(req("GET", "/api/interactions?type=POLL", tokenA))).status).toBe(400);
-  });
-
-  it("lists videos with interaction counts and reports real dashboard stats", async () => {
+  it("lists videos with interaction counts", async () => {
     const list = await (await listVideosRoute(req("GET", "/api/videos", tokenA))).json();
     expect(list.videos).toHaveLength(1);
     const count = await db.orm.public.Interaction.where({ videoId: videoA }).all();
     expect(list.videos[0].interactionCount).toBe(count.length);
-    const stats = await getDashboardStats(userA);
-    expect(stats.videoCount).toBe(1);
-    expect(stats.surveyCount).toBe(count.filter((i) => i.type === "SURVEY").length);
-    expect(stats.quizCount).toBe(count.filter((i) => i.type === "QUIZ").length);
-    expect(stats.recent[0].id).toBe(videoA);
   });
 
   it("renames a video and validates the title", async () => {

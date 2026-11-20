@@ -54,9 +54,11 @@ describe("student navigation", () => {
     expect(titleFor("/student/parent")).toBe("For grown-ups");
   });
 
-  it("leaves teacher navigation as a single ungrouped list", () => {
-    expect(navGroupsFor("TEACHER")).toEqual([{ items: TEACHER_NAV_ITEMS }]);
-    expect(TEACHER_NAV_ITEMS.map((i) => i.href)).toEqual(["/dashboard", "/library", "/upload", "/videos", "/responses", "/surveys", "/quizzes", "/settings"]);
+  it("groups teacher navigation into sections that cover every item once", () => {
+    expect(navGroupsFor("TEACHER").flatMap((group) => group.items).map((item) => item.href).sort()).toEqual(TEACHER_NAV_ITEMS.map((item) => item.href).sort());
+    expect(TEACHER_NAV_ITEMS.map((i) => i.href)).toEqual(["/dashboard", "/modules", "/journeys", "/students", "/settings"]);
+    // Every teacher menu item is a route a teacher may open.
+    for (const item of TEACHER_NAV_ITEMS) expect(canAccessPath("TEACHER", item.href)).toBe(true);
   });
 
   it("keeps /student for students only, even through next", () => {

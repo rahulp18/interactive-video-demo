@@ -1,19 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import type { FormEvent } from "react";
 import { FieldGroup } from "@/components/ui/field";
 import { authApi } from "@/lib/auth/client";
-import { withNext } from "@/lib/auth/redirect";
 import { validateLogin } from "@/lib/auth/forms";
 import { FormError } from "./form-error";
 import { SubmitButton } from "./submit-button";
 import { TextField } from "./text-field";
 import { useAuthForm } from "./use-auth-form";
-import { useNextParam } from "./use-next-param";
 
 export function LoginForm() {
-  const next = useNextParam();
   const form = useAuthForm<"email" | "password">();
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -74,12 +70,7 @@ export function LoginForm() {
           </FieldGroup>
         </fieldset>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        New to PARICHAY?{" "}
-        <Link href={withNext("/register", next)} className="rounded-sm font-medium text-foreground underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-          Create a student account
-        </Link>
-      </p>
+      <p className="mt-6 text-center text-sm text-muted-foreground">Students: your teacher gives you a username and PIN.</p>
     </>
   );
 }

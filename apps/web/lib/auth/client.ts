@@ -40,7 +40,5 @@ export const authApi = {
     post<{ user: SessionUser }>("/api/auth/login", { email, password }).then((r) => r.user),
   pinLogin: (username: string, pin: string) =>
     post<{ user: SessionUser }>("/api/auth/pin-login", { username, pin }).then((r) => r.user),
-  register: (name: string, email: string, password: string) =>
-    post<{ user: SessionUser }>("/api/auth/register", { name, email, password }).then((r) => r.user),
   logout: () => post<{ ok: true }>("/api/auth/logout").then(() => undefined),
 };

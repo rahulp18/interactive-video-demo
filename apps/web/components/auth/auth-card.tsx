@@ -1,11 +1,14 @@
-import { PlayIcon } from "lucide-react";
+import { StarIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { Card, CardContent } from "@/components/ui/card";
+import { studentFont } from "@/components/student/student-font";
+import { cn } from "@/lib/utils";
+import { Mascot } from "@/components/brand/Mascot";
 
 /**
- * Shared frame for the sign-in and sign-up pages: a brand panel beside the form on large screens, a compact header
- * above it on small ones. Colours come from the existing theme tokens only.
+ * Shared frame for the sign-in and sign-up pages, designed for children first: it opts into the PARICHAY theme
+ * (`data-audience="student"`: warm tokens, big radius, Nunito, 48px targets), greets with the mascot, and floats bright
+ * shapes around a chunky card. Large screens get a sunny panel beside the form; phones get the mascot above it.
  */
 export function AuthCard({
   title,
@@ -21,30 +24,49 @@ export function AuthCard({
   children: ReactNode;
 }) {
   return (
-    <div className="grid min-h-dvh flex-1 lg:grid-cols-[5fr_6fr]">
-      <aside className="relative hidden overflow-hidden bg-primary text-primary-foreground lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <div aria-hidden className="pointer-events-none absolute -top-32 -right-32 size-96 rounded-full bg-primary-foreground/10 blur-3xl" />
-        <Wordmark onPrimary className="relative" />
-        <div className="relative max-w-md space-y-5">
-          <h2 className="text-4xl font-semibold tracking-tight text-balance xl:text-5xl">{panelTitle}</h2>
-          <p className="text-base leading-relaxed text-primary-foreground/75 xl:text-lg">{panelText}</p>
+    <div data-audience="student" className={cn(studentFont.variable, "relative flex min-h-dvh flex-1 flex-col overflow-hidden lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]")}>
+      <aside className="relative hidden overflow-hidden bg-[linear-gradient(160deg,var(--accent)_0%,color-mix(in_oklch,var(--accent),var(--secondary)_70%)_100%)] text-foreground lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-14">
+        <Shapes />
+        <Wordmark className="relative" />
+        <div className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6 text-center">
+          <div className="relative size-56 xl:size-64">
+            <div className="absolute inset-x-6 bottom-0 h-6 rounded-full bg-foreground/10 blur-md" />
+            <Mascot className="bob relative" />
+            <span className="absolute -top-2 -left-10 rotate-[-6deg] rounded-2xl rounded-br-sm border-2 border-foreground/15 bg-card px-4 py-2 text-lg font-extrabold shadow-[0_4px_0_oklch(0.3_0.05_50/0.15)]">Hi there! 👋</span>
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-4xl leading-[1.1] font-extrabold tracking-tight text-balance xl:text-5xl">{panelTitle}</h2>
+            <p className="text-base leading-relaxed text-foreground/80 xl:text-lg">{panelText}</p>
+          </div>
         </div>
-        <LessonPreview />
+        <ul className="relative mx-auto flex flex-wrap justify-center gap-2 text-sm font-bold">
+          {["🎬 Watch", "🤔 Think", "✅ Answer", "🌳 Grow"].map((chip) => (
+            <li key={chip} className="rounded-full border-2 border-foreground/10 bg-card px-4 py-2 shadow-[0_3px_0_oklch(0.3_0.05_50/0.12)]">
+              {chip}
+            </li>
+          ))}
+        </ul>
       </aside>
 
-      <div className="flex min-w-0 flex-col">
-        <header className="flex h-16 items-center px-4 sm:px-8 lg:hidden">
+      <div className="relative flex min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_top,var(--accent)_0%,transparent_55%)] lg:bg-none">
+        <div className="lg:hidden">
+          <Shapes />
+        </div>
+        <header className="relative flex h-16 items-center px-5 sm:px-8 lg:hidden">
           <Wordmark />
         </header>
-        <main className="flex flex-1 items-center justify-center px-4 pt-4 pb-10 sm:px-8 lg:py-12">
-          <div className="w-full max-w-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
-            <div className="mb-6 space-y-1.5">
-              <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{title}</h1>
-              <p className="text-sm text-muted-foreground sm:text-base">{description}</p>
+        <main className="relative flex flex-1 items-start justify-center px-4 pt-2 pb-10 sm:px-8 lg:items-center lg:py-12">
+          <div className="w-full max-w-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
+            <div className="mb-5 flex items-end gap-3 lg:block">
+              <div className="size-24 shrink-0 sm:size-28 lg:hidden">
+                <Mascot />
+              </div>
+              <div className="space-y-1.5 pb-1">
+                <h1 className="text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl">{title}</h1>
+                <p className="text-base text-muted-foreground">{description}</p>
+              </div>
             </div>
-            <Card className="[--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(7)]">
-              <CardContent>{children}</CardContent>
-            </Card>
+            <div className="rounded-[2rem] border-2 border-border bg-card p-5 text-card-foreground shadow-[0_8px_0_var(--border)] sm:p-7">{children}</div>
           </div>
         </main>
       </div>
@@ -52,29 +74,17 @@ export function AuthCard({
   );
 }
 
-/** Decorative, CSS-only picture of what PARICHAY does: a video that pauses on a question. Hidden from assistive tech. */
-function LessonPreview() {
+/** Bright floating stars, blobs and dots. Pure decoration, never in the way of content. */
+function Shapes() {
   return (
-    <div aria-hidden className="relative w-full max-w-md rounded-2xl border border-primary-foreground/15 bg-primary-foreground/[0.06] p-4">
-      <div className="relative aspect-video overflow-hidden rounded-xl bg-primary-foreground/10">
-        <span className="absolute top-3 left-3 flex size-8 items-center justify-center rounded-full bg-primary-foreground/90 text-primary">
-          <PlayIcon className="size-3.5 translate-x-px fill-current" />
-        </span>
-        <div className="absolute inset-x-3 bottom-3 rounded-lg bg-background p-3 text-foreground shadow-lg">
-          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">Quick question</p>
-          <p className="mt-0.5 text-sm font-medium">Which answer fits what you just watched?</p>
-          <div className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
-            <span className="rounded-md border px-2 py-1.5">Option A</span>
-            <span className="rounded-md border border-foreground bg-foreground/5 px-2 py-1.5 font-medium">Option B</span>
-          </div>
-        </div>
-      </div>
-      <div className="relative mt-4 h-1.5 rounded-full bg-primary-foreground/20">
-        <div className="h-full w-[58%] rounded-full bg-primary-foreground" />
-        <span className="absolute top-1/2 left-[24%] size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400" />
-        <span className="absolute top-1/2 left-[58%] size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300 ring-2 ring-primary" />
-        <span className="absolute top-1/2 left-[86%] size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-300 bg-primary" />
-      </div>
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <span className="absolute -top-16 -left-16 size-56 rounded-full bg-secondary opacity-80" />
+      <span className="absolute top-[28%] -right-10 size-32 rounded-full bg-primary/15" />
+      <span className="absolute -bottom-20 -left-10 size-64 rounded-full bg-(--student-leaf)/20" />
+      <StarIcon className="bob absolute top-[14%] right-[12%] size-9 fill-primary text-primary [--r:12deg]" />
+      <StarIcon className="bob absolute bottom-[18%] left-[10%] size-7 fill-(--student-leaf) text-(--student-leaf) [--r:-10deg] [animation-delay:-2s]" />
+      <StarIcon className="bob absolute top-[46%] left-[6%] size-5 fill-primary text-primary [--r:20deg] [animation-delay:-3s]" />
+      <span className="bob absolute right-[8%] bottom-[12%] size-5 rounded-full bg-secondary-foreground/30 [animation-delay:-1s]" />
     </div>
   );
 }
