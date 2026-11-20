@@ -5,6 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "env": ["DATABASE_URL", "UPLOADTHING_TOKEN"],
+      "passThroughEnv": ["DEMO_PASSWORD", "DEMO_STUDENT_PIN"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "typecheck": { "dependsOn": ["^typecheck"] }
