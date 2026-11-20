@@ -123,15 +123,37 @@ function TeacherSidebar({ user, rail }: { user: User; rail: boolean }) {
  * page is a filled orange pill (plus bold text and aria-current, so colour is never the only signal). The grown-ups link
  * and the child's own card (avatar, name, sign out) sit at the bottom. `rail`: icons only below `lg`.
  */
+/** A friendly colour per student menu item (icon chip), so each place feels different. */
+const STUDENT_NAV_TINT: Record<string, string> = {
+  "/student": "bg-rose-500 text-white shadow-sm shadow-rose-500/30",
+  "/student/journeys": "bg-sky-500 text-white shadow-sm shadow-sky-500/30",
+  "/student/virtues": "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30",
+  "/student/profile": "bg-violet-500 text-white shadow-sm shadow-violet-500/30",
+};
+
 function StudentSidebar({ user, rail }: { user: User; rail: boolean }) {
   const pathname = usePathname();
   const grownUps = pathname.startsWith(STUDENT_GROWNUPS_LINK.href);
-  const row = "flex min-h-12 items-center gap-3 rounded-xl px-3 text-[0.95rem] outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/60";
+  const row = "group flex min-h-12 items-center gap-3 rounded-2xl px-2 text-[0.95rem] outline-none transition-all focus-visible:ring-3 focus-visible:ring-sidebar-ring/60";
   return (
-    <div className={cn("flex h-full flex-col gap-6 px-3 py-4 lg:px-4", rail && "max-lg:px-2")}>
+    <div className={cn("flex h-full flex-col gap-4 px-3 py-4 lg:px-4", rail && "max-lg:px-2")}>
       <BrandMark role={user.role} rail={rail} onDark />
+
+      {/* Greeting card: who is learning today */}
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-3xl bg-gradient-to-br from-sidebar-primary/25 to-sidebar-accent p-3 ring-1 ring-sidebar-border",
+          rail && "max-lg:justify-center max-lg:p-1.5",
+        )}
+      >
+        <AvatarBubble avatar={user.avatar} name={user.name} className="size-11 text-2xl" />
+        <div className={cn("min-w-0 flex-1", rail && "max-lg:sr-only")}>
+          <p className="text-xs text-sidebar-foreground/65">Hi there 👋</p>
+          <p className="truncate text-sm font-bold">{firstNameOf(user.name)}</p>
+        </div>
+      </div>
+
       <nav aria-label="Main" className="-mx-1 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1">
-        <p className={cn("px-3 pb-1 text-[11px] font-bold tracking-[0.12em] text-sidebar-foreground/55 uppercase", rail && "max-lg:sr-only")}>Explore</p>
         {STUDENT_NAV_ITEMS.map((item) => {
           const { href, label, icon: Icon } = item;
           const active = isItemActive(pathname, item);
@@ -145,41 +167,49 @@ function StudentSidebar({ user, rail }: { user: User; rail: boolean }) {
                 row,
                 rail && "max-lg:justify-center max-lg:px-0",
                 active
-                  ? "bg-sidebar-primary font-bold text-sidebar-primary-foreground shadow-sm"
-                  : "font-semibold text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                  ? "bg-sidebar-foreground font-bold text-sidebar shadow-md"
+                  : "font-semibold text-sidebar-foreground/85 hover:translate-x-0.5 hover:bg-sidebar-accent hover:text-sidebar-foreground",
               )}
             >
-              <Icon className="size-5 shrink-0" aria-hidden />
+              <span
+                aria-hidden
+                className={cn(
+                  "flex size-9 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105",
+                  active ? "bg-sidebar-primary text-sidebar-primary-foreground" : (STUDENT_NAV_TINT[href] ?? "bg-sidebar-accent"),
+                )}
+              >
+                <Icon className="size-5" />
+              </span>
               <span className={cn("truncate", rail && "max-lg:sr-only")}>{label}</span>
+              {active && <span aria-hidden className={cn("ml-auto size-2 shrink-0 rounded-full bg-sidebar-primary", rail && "max-lg:hidden")} />}
             </Link>
           );
         })}
       </nav>
-      <div className="space-y-2">
+
+      <div className="space-y-2 border-t border-sidebar-border pt-3">
         <Link
           href={STUDENT_GROWNUPS_LINK.href}
           title={rail ? STUDENT_GROWNUPS_LINK.label : undefined}
           aria-current={grownUps ? "page" : undefined}
           className={cn(
             row,
-            "text-sm",
+            "min-h-11 text-sm",
             rail && "max-lg:justify-center max-lg:px-0",
             grownUps ? "bg-sidebar-accent font-bold text-sidebar-foreground" : "font-semibold text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground",
           )}
         >
-          <ShieldCheckIcon className="size-[18px] shrink-0" aria-hidden />
+          <span aria-hidden className="flex size-9 shrink-0 items-center justify-center">
+            <ShieldCheckIcon className="size-[18px]" />
+          </span>
           <span className={cn(rail && "max-lg:sr-only")}>{STUDENT_GROWNUPS_LINK.label}</span>
         </Link>
-        <div className={cn("flex items-center gap-2.5 rounded-2xl bg-sidebar-accent/70 p-2.5", rail && "max-lg:flex-col max-lg:p-1.5")}>
-          <AvatarBubble avatar={user.avatar} name={user.name} className="size-10 text-xl" />
-          <div className={cn("min-w-0 flex-1", rail && "max-lg:sr-only")}>
-            <p className="truncate text-sm font-bold">{firstNameOf(user.name)}</p>
-            <p className="truncate text-xs text-sidebar-foreground/60">Keep growing!</p>
-          </div>
+        <div className={cn("flex items-center gap-2", rail && "max-lg:justify-center")}>
           <LogoutButton
-            iconOnly
+            rail={rail}
+            keepIcon
             variant="ghost"
-            buttonClassName="size-10 rounded-xl p-0 text-sidebar-foreground/75 hover:bg-sidebar hover:text-sidebar-foreground focus-visible:ring-sidebar-ring/60"
+            buttonClassName="h-11 w-full justify-start gap-3 rounded-2xl px-2 text-sm font-semibold text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-sidebar-ring/60"
           />
         </div>
       </div>
