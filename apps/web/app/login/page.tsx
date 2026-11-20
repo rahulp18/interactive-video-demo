@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import { AuthCard } from "@/components/auth/auth-card";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { SignIn } from "@/components/auth/SignIn";
 import { redirectIfAuthenticated } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -25,7 +25,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       panelTitle="Good to see you again."
       panelText="Pick up where you left off. Your answers are saved to your account."
     >
-      <LoginForm />
+      <SignIn />
     </AuthCard>
   );
   // The form is the static shell; the session check streams in behind it and redirects signed-in visitors.

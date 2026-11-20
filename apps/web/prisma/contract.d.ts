@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4356762c4cff92f369547f1ae49773ab788f3fb6647fab2821e8d8394c7733fb'>;
+  StorageHashBase<'e918ee1aab6a927861624ad49ab995cda83801c669acead563454c3f4678eabe'>;
 export type ExecutionHash =
   ExecutionHashBase<'7a4a51c110b114f8240d997c427c995cd240e6824c7561b96a8b2e984099e71c'>;
 export type ProfileHash =
@@ -521,8 +521,12 @@ export namespace Models {
     id: FieldOutputTypes['public']['User']['id'];
     name: FieldOutputTypes['public']['User']['name'];
     password: FieldOutputTypes['public']['User']['password'];
+    pinFailedAttempts: FieldOutputTypes['public']['User']['pinFailedAttempts'];
+    pinHash: FieldOutputTypes['public']['User']['pinHash'];
+    pinLockedUntil: FieldOutputTypes['public']['User']['pinLockedUntil'];
     role: FieldOutputTypes['public']['User']['role'];
     updatedAt: FieldOutputTypes['public']['User']['updatedAt'];
+    username: FieldOutputTypes['public']['User']['username'];
     moduleProgress: public_ModuleProgress[];
     ratings: public_VirtueRating[];
     responses: public_InteractionResponse[];
@@ -1638,6 +1642,29 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly pinFailedAttempts: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly pinHash: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly pinLockedUntil: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
                 readonly role: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -1655,9 +1682,18 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
                 };
+                readonly username: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['email'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['email'] },
+                { readonly columns: readonly ['username'] },
+              ];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -2891,6 +2927,22 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly pinFailedAttempts: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly pinHash: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly pinLockedUntil: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
               readonly role: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2902,6 +2954,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
+              };
+              readonly username: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
             };
             readonly relations: {
@@ -2970,8 +3026,12 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
                 readonly password: { readonly column: 'password' };
+                readonly pinFailedAttempts: { readonly column: 'pinFailedAttempts' };
+                readonly pinHash: { readonly column: 'pinHash' };
+                readonly pinLockedUntil: { readonly column: 'pinLockedUntil' };
                 readonly role: { readonly column: 'role' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly username: { readonly column: 'username' };
               };
             };
           };

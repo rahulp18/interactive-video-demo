@@ -9,7 +9,7 @@ import { authApi } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 
 /** `rail`: icon-only (label read by screen readers) until the `lg` breakpoint, for the collapsed tablet sidebar. */
-export function LogoutButton({ className, rail = false }: { className?: string; rail?: boolean }) {
+export function LogoutButton({ className, buttonClassName, rail = false }: { className?: string; buttonClassName?: string; rail?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -45,7 +45,7 @@ export function LogoutButton({ className, rail = false }: { className?: string; 
           <AlertDescription>Could not log out. Try again.</AlertDescription>
         </Alert>
       )}
-      <Button variant="outline" onClick={onClick} disabled={pending} title={rail ? "Log out" : undefined}>
+      <Button variant="outline" className={buttonClassName} onClick={onClick} disabled={pending} title={rail ? "Log out" : undefined}>
         {pending ? <LoaderCircleIcon className="animate-spin" aria-hidden /> : rail && <LogOutIcon aria-hidden className="lg:hidden" />}
         <span className={cn(rail && "max-lg:sr-only")}>{pending ? "Logging out…" : "Log out"}</span>
       </Button>

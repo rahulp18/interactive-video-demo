@@ -36,3 +36,10 @@ export function demoPassword(): string {
   if (!password || password.length < 8) throw new Error("Set DEMO_PASSWORD (at least 8 characters) in apps/web/.env.");
   return password;
 }
+
+/** The shared 4-digit PIN of the demo students (DEMO_STUDENT_PIN). Never printed. */
+export function demoStudentPin(): string {
+  const pin = process.env["DEMO_STUDENT_PIN"]?.trim();
+  if (!pin || !/^\d{4}$/.test(pin)) throw new Error("Set DEMO_STUDENT_PIN (exactly 4 digits) in apps/web/.env.");
+  return pin;
+}

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { db } from "../../prisma/db";
 import { hashPassword, verifyPassword } from "../../lib/auth/password";
+import { clearPinLockout, setStudentCredentials } from "../../lib/auth/pin";
 import { validateParentMarks } from "../../lib/scoring";
 import { DEMO_ACCOUNTS, isDemoEmail, accountByKey, type DemoAccount } from "./content/accounts";
 import { CLIPS, JOURNEYS, MODULES, MODULE_BY_SLUG, VIRTUE_SLUGS, demoFileKey } from "./content";
@@ -39,6 +40,30 @@ export async function ensureAccounts(password: string, opts: { syncPasswords?: b
     if (Object.keys(patch).length > 0) await db.orm.public.User.where({ id: existing.id }).updateAll(patch);
   }
   return ids;
+}
+
+/**
+ * Gives each demo student their username and the shared PIN. Idempotent: a student whose username and PIN already match
+ * is left untouched (a re-hash would change the row on every run). Never prints the PIN.
+ */
+export async function ensureStudentCredentials(ids: Record<DemoAccount["key"], number>, pin: string): Promise<number> {
+  let changed = 0;
+  for (const account of DEMO_ACCOUNTS) {
+    if (!account.username) continue;
+    const user = await db.orm.public.User.where({ id: ids[account.key] }).first();
+    if (user && user.username === account.username && user.pinHash && (await verifyPassword(pin, user.pinHash))) continue;
+    await assertDemoUser(ids[account.key]);
+    await setStudentCredentials(ids[account.key], account.username, pin);
+    changed++;
+  }
+  return changed;
+}
+
+/** demo:reset: unlocks every demo student (a rehearsal mistake must never lock the presenter out). Credentials stay. */
+export async function clearDemoLockouts(ids: Record<DemoAccount["key"], number>): Promise<void> {
+  const studentIds = DEMO_ACCOUNTS.filter((a) => a.username).map((a) => ids[a.key]);
+  for (const id of studentIds) await assertDemoUser(id);
+  await clearPinLockout(studentIds);
 }
 
 export async function demoAccountIds(): Promise<Record<DemoAccount["key"], number>> {
@@ -396,6 +421,8 @@ export async function seedStudentHistory(userId: number, now: Date = new Date())
 
 /** demo:reset: puts a demo student back to the designed state. Leaves content and every other user alone. */
 export async function resetStudent(userId: number, now: Date = new Date()) {
+  await assertDemoUser(userId);
+  await clearPinLockout([userId]);
   await clearStudentHistory(userId);
   return seedStudentHistory(userId, now);
 }

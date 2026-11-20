@@ -1562,6 +1562,30 @@
                   "kind": "scalar"
                 }
               },
+              "pinFailedAttempts": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "pinHash": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "pinLockedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
               "role": {
                 "nullable": false,
                 "type": {
@@ -1583,6 +1607,13 @@
                   "typeParams": {
                     "precision": 3
                   }
+                }
+              },
+              "username": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
                 }
               }
             },
@@ -1680,11 +1711,23 @@
                 "password": {
                   "column": "password"
                 },
+                "pinFailedAttempts": {
+                  "column": "pinFailedAttempts"
+                },
+                "pinHash": {
+                  "column": "pinHash"
+                },
+                "pinLockedUntil": {
+                  "column": "pinLockedUntil"
+                },
                 "role": {
                   "column": "role"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
+                },
+                "username": {
+                  "column": "username"
                 }
               },
               "namespaceId": "public",
@@ -3570,6 +3613,26 @@
                   "expression": "\"role\" IN ('STUDENT', 'TEACHER')",
                   "name": "User_role_check_b921956f",
                   "prefix": "User_role_check"
+                },
+                {
+                  "expression": "\"pinFailedAttempts\" >= 0",
+                  "name": "user_pin_attempts_nonneg_b52230ef",
+                  "prefix": "user_pin_attempts_nonneg"
+                },
+                {
+                  "expression": "\"pinHash\" IS NULL OR \"username\" IS NOT NULL",
+                  "name": "user_pin_needs_username_9709ea60",
+                  "prefix": "user_pin_needs_username"
+                },
+                {
+                  "expression": "\"pinHash\" IS NULL OR \"role\" = 'STUDENT'",
+                  "name": "user_pin_students_only_2e2e3661",
+                  "prefix": "user_pin_students_only"
+                },
+                {
+                  "expression": "\"username\" IS NULL OR \"username\" ~ '^[a-z0-9_]{3,20}$'",
+                  "name": "user_username_format_6e88c958",
+                  "prefix": "user_username_format"
                 }
               ],
               "columns": {
@@ -3605,6 +3668,28 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "pinFailedAttempts": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nullable": false
+                },
+                "pinHash": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "pinLockedUntil": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
                 "role": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -3627,6 +3712,11 @@
                   "typeParams": {
                     "precision": 3
                   }
+                },
+                "username": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 }
               },
               "foreignKeys": [],
@@ -3640,6 +3730,11 @@
                 {
                   "columns": [
                     "email"
+                  ]
+                },
+                {
+                  "columns": [
+                    "username"
                   ]
                 }
               ]
@@ -4081,7 +4176,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4356762c4cff92f369547f1ae49773ab788f3fb6647fab2821e8d8394c7733fb"
+    "storageHash": "e918ee1aab6a927861624ad49ab995cda83801c669acead563454c3f4678eabe"
   },
   "execution": {
     "executionHash": "7a4a51c110b114f8240d997c427c995cd240e6824c7561b96a8b2e984099e71c",

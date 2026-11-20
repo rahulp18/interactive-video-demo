@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 // Both paths reuse the existing auth pages; `next` decides where the user lands after signing in.
-const STUDENT_LOGIN = withNext("/login", "/library");
-const STUDENT_REGISTER = withNext("/register", "/library");
+const STUDENT_LOGIN = withNext("/login", "/student");
+const STUDENT_REGISTER = withNext("/register", "/student");
 const TEACHER_LOGIN = withNext("/login", "/dashboard");
 
 const STEPS = [

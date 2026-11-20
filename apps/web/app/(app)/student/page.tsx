@@ -5,5 +5,5 @@ import { StudentPlaceholder } from "@/components/student/StudentPlaceholder";
 export const metadata: Metadata = { title: "Home" };
 
 export default function Page() {
-  return <StudentPlaceholder title="Home" description="Your learning home on PARICHAY." icon={HouseIcon} libraryLink />;
+  return <StudentPlaceholder title="Home" description="Your PARICHAY home." icon={HouseIcon} />;
 }

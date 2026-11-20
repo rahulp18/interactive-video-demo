@@ -63,6 +63,13 @@ model User {
   role      UserRole @default(STUDENT)
   // Stores a password hash only, never plaintext. Hashing is the application's job.
   password  String
+  // Student sign-in without email (FR-4.4): lowercase username + 4-digit PIN. Set server-side only (setStudentCredentials).
+  username  String?  @unique
+  // Same hash format as `password`. Only students may have one, and only together with a username.
+  pinHash   String?
+  // Lockout lives in the database (not in memory) because every serverless request may hit a different instance.
+  pinFailedAttempts Int @default(0)
+  pinLockedUntil    DateTime?
   responses InteractionResponse[]
   sessions  Session[]
   videos    Video[]
@@ -70,6 +77,11 @@ model User {
   ratings   VirtueRating[]
   createdAt temporal.CreatedAt
   updatedAt temporal.UpdatedAt
+
+  @@check(expression: sql`"username" IS NULL OR "username" ~ '^[a-z0-9_]{3,20}$'`, name: "user_username_format")
+  @@check(expression: sql`"pinHash" IS NULL OR "role" = 'STUDENT'`, name: "user_pin_students_only")
+  @@check(expression: sql`"pinHash" IS NULL OR "username" IS NOT NULL`, name: "user_pin_needs_username")
+  @@check(expression: sql`"pinFailedAttempts" >= 0`, name: "user_pin_attempts_nonneg")
 }
 
 // One row per issued web cookie or mobile bearer token. Only the SHA-256 of the token is stored.

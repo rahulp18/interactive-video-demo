@@ -7,6 +7,7 @@ import { CLIPS, JOURNEYS, MODULES, RATING_LABELS, VIRTUE_SLUGS, demoFileKey } fr
 import { DEMO_EMAIL_DOMAIN, isDemoEmail } from "@/scripts/demo/content/accounts";
 import { COMPLETED, IN_PROGRESS, NOT_STARTED, RATINGS } from "@/scripts/demo/content/history";
 import { offlineAssessment, offlineChildView, resolvePicks } from "@/scripts/demo/profile";
+import { PIN_MAX_ATTEMPTS, loginWithPin, setStudentCredentials } from "@/lib/auth/pin";
 import { assertDemoUser, clearStudentHistory, ensureAccounts, resetStudent, seedContent, seedJourneys, seedStudentHistory } from "@/scripts/demo/seed-lib";
 
 vi.mock("server-only", () => ({}));
@@ -337,6 +338,22 @@ describe("demo seed against the database", () => {
     expect(summary(restored)).toEqual(summary(original));
     expect(restored.swot.strengths.map((s) => s.virtueId)).toEqual(original.swot.strengths.map((s) => s.virtueId));
     expect(restored.swot.threats.map((s) => s.virtueId)).toEqual(original.swot.threats.map((s) => s.virtueId));
+  }, 300_000);
+
+  it("demo:reset clears a PIN lockout but keeps the username and PIN", async () => {
+    const studentId = await makeStudent();
+    await seedContent(ownerId);
+    const username = `t${randomUUID().replace(/-/g, "").slice(0, 12)}`;
+    await setStudentCredentials(studentId, username, "2468");
+    for (let i = 0; i < PIN_MAX_ATTEMPTS; i++) await loginWithPin({ username, pin: "1111" }).catch(() => {});
+    await expect(loginWithPin({ username, pin: "2468" })).rejects.toMatchObject({ code: "PIN_LOCKED" });
+
+    await resetStudent(studentId);
+    const row = (await db.orm.public.User.where({ id: studentId }).first())!;
+    expect(row.pinLockedUntil).toBeNull();
+    expect(row.pinFailedAttempts).toBe(0);
+    expect(row.username).toBe(username);
+    expect((await loginWithPin({ username, pin: "2468" })).user.id).toBe(studentId);
   }, 300_000);
 
   it("only ever touches demo accounts, and leaves other users alone", async () => {

@@ -6,7 +6,6 @@ import { FieldGroup } from "@/components/ui/field";
 import { authApi } from "@/lib/auth/client";
 import { withNext } from "@/lib/auth/redirect";
 import { validateLogin } from "@/lib/auth/forms";
-import { LoginContext } from "./AccountContext";
 import { FormError } from "./form-error";
 import { SubmitButton } from "./submit-button";
 import { TextField } from "./text-field";
@@ -39,7 +38,6 @@ export function LoginForm() {
 
   return (
     <>
-      <LoginContext />
       <form
         key={form.resetKey}
         onSubmit={onSubmit}

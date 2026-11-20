@@ -1,0 +1,488 @@
+[
+  {
+    "id": "column.public.User.pinFailedAttempts",
+    "label": "Add column \"pinFailedAttempts\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "pinFailedAttempts",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"pinFailedAttempts\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinFailedAttempts"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"pinFailedAttempts\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"pinFailedAttempts\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"pinFailedAttempts\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"pinFailedAttempts\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinFailedAttempts"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"pinFailedAttempts\" on \"User\""
+        }
+      },
+      {
+        "description": "verify column \"pinFailedAttempts\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinFailedAttempts",
+          "integer"
+        ]
+      },
+      {
+        "description": "verify column \"pinFailedAttempts\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinFailedAttempts",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.User.pinHash",
+    "label": "Add column \"pinHash\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "pinHash",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"pinHash\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinHash"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"pinHash\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"pinHash\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"pinHash\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"pinHash\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinHash"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"pinHash\" on \"User\""
+        }
+      },
+      {
+        "description": "verify column \"pinHash\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinHash",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.User.pinLockedUntil",
+    "label": "Add column \"pinLockedUntil\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "pinLockedUntil",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"pinLockedUntil\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinLockedUntil"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"pinLockedUntil\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"pinLockedUntil\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"pinLockedUntil\" timestamptz(3)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"pinLockedUntil\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinLockedUntil"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"pinLockedUntil\" on \"User\""
+        }
+      },
+      {
+        "description": "verify column \"pinLockedUntil\" has type \"timestamp(3) with time zone\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "pinLockedUntil",
+          "timestamp(3) with time zone"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.User.username",
+    "label": "Add column \"username\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "username",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"username\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "username"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"username\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"username\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"username\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"username\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "username"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"username\" on \"User\""
+        }
+      },
+      {
+        "description": "verify column \"username\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "username",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.User.user_pin_attempts_nonneg_b52230ef",
+    "label": "Add check constraint \"user_pin_attempts_nonneg_b52230ef\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_pin_attempts_nonneg_b52230ef",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_pin_attempts_nonneg_b52230ef\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_pin_attempts_nonneg_b52230ef",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"user_pin_attempts_nonneg_b52230ef\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_pin_attempts_nonneg_b52230ef\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"user_pin_attempts_nonneg_b52230ef\" CHECK (\"pinFailedAttempts\" >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"user_pin_attempts_nonneg_b52230ef\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "user_pin_attempts_nonneg_b52230ef",
+          "public",
+          "\"public\".\"User\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.User.user_pin_needs_username_9709ea60",
+    "label": "Add check constraint \"user_pin_needs_username_9709ea60\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_pin_needs_username_9709ea60",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_pin_needs_username_9709ea60\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_pin_needs_username_9709ea60",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"user_pin_needs_username_9709ea60\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_pin_needs_username_9709ea60\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"user_pin_needs_username_9709ea60\" CHECK (\"pinHash\" IS NULL OR \"username\" IS NOT NULL)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"user_pin_needs_username_9709ea60\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "user_pin_needs_username_9709ea60",
+          "public",
+          "\"public\".\"User\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.User.user_pin_students_only_2e2e3661",
+    "label": "Add check constraint \"user_pin_students_only_2e2e3661\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_pin_students_only_2e2e3661",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_pin_students_only_2e2e3661\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_pin_students_only_2e2e3661",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"user_pin_students_only_2e2e3661\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_pin_students_only_2e2e3661\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"user_pin_students_only_2e2e3661\" CHECK (\"pinHash\" IS NULL OR \"role\" = 'STUDENT')"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"user_pin_students_only_2e2e3661\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "user_pin_students_only_2e2e3661",
+          "public",
+          "\"public\".\"User\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.User.user_username_format_6e88c958",
+    "label": "Add check constraint \"user_username_format_6e88c958\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_username_format_6e88c958",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_username_format_6e88c958\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_username_format_6e88c958",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"user_username_format_6e88c958\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_username_format_6e88c958\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"user_username_format_6e88c958\" CHECK (\"username\" IS NULL OR \"username\" ~ '^[a-z0-9_]{3,20}$')"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"user_username_format_6e88c958\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "user_username_format_6e88c958",
+          "public",
+          "\"public\".\"User\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.User.User_username_key",
+    "label": "Add unique constraint on \"User\" (username)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "User_username_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_username_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_username_key",
+          "public",
+          "\"public\".\"User\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"User_username_key\" on \"User\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"User_username_key\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_username_key\" UNIQUE (\"username\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"User_username_key\" exists on (username)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "User_username_key",
+          "public",
+          "\"public\".\"User\"",
+          "u",
+          "[\"username\"]"
+        ]
+      }
+    ]
+  }
+]

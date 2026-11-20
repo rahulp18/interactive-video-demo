@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { confirmTarget } from "./guard";
-import { demoAccountIds, resetStudent } from "./seed-lib";
+import { clearDemoLockouts, demoAccountIds, resetStudent } from "./seed-lib";
 import { printSummary } from "./summary";
 import { db } from "../../prisma/db";
 
@@ -10,7 +10,9 @@ import { db } from "../../prisma/db";
 async function main() {
   confirmTarget(process.argv.slice(2), "PARICHAY demo reset");
   const ids = await demoAccountIds();
+  await clearDemoLockouts(ids);
   const h = await resetStudent(ids.student);
+  console.log("sign-in lockouts cleared (usernames and PINs unchanged)");
   console.log(`reset: ${h.progress} module progress rows, ${h.responses} responses, ${h.ratings} ratings restored`);
   await printSummary(ids.student);
 }

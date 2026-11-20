@@ -1,12 +1,20 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireCurrentUser } from "@/lib/auth/server";
+import { studentFont } from "@/components/student/student-font";
 import { AppFrame } from "./AppFrame";
 
 /** Reads the session on the server and redirects to /login when it is missing, expired or revoked. */
 export async function AppShell({ children }: { children: ReactNode }) {
   const user = await requireCurrentUser();
-  return <AppFrame user={{ name: user.name, email: user.email, role: user.role }}>{children}</AppFrame>;
+  return (
+    <AppFrame
+      user={{ name: user.name, email: user.email, role: user.role }}
+      fontClass={user.role === "STUDENT" ? studentFont.variable : undefined}
+    >
+      {children}
+    </AppFrame>
+  );
 }
 
 export function ShellSkeleton() {

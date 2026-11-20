@@ -23,45 +23,66 @@ const params = <T extends object>(p: T) => ({ params: Promise.resolve(p) }) as n
 
 describe("role routing (pure)", () => {
   it("sends each role to its own home", () => {
-    expect(homePathFor("STUDENT")).toBe("/library");
+    expect(homePathFor("STUDENT")).toBe("/student");
     expect(homePathFor("TEACHER")).toBe("/dashboard");
-    expect(postAuthPath("STUDENT", undefined)).toBe("/library");
+    expect(postAuthPath("STUDENT", undefined)).toBe("/student");
     expect(postAuthPath("TEACHER", null)).toBe("/dashboard");
   });
 
   it("honours a safe next only when the role may open it", () => {
     expect(postAuthPath("STUDENT", "/watch/abc")).toBe("/watch/abc");
     expect(postAuthPath("STUDENT", "/library")).toBe("/library");
-    expect(postAuthPath("STUDENT", "/results")).toBe("/results");
+    expect(postAuthPath("STUDENT", "/student/journeys")).toBe("/student/journeys");
+    expect(postAuthPath("STUDENT", "/student/parent")).toBe("/student/parent");
     expect(postAuthPath("TEACHER", "/videos/12")).toBe("/videos/12");
     expect(postAuthPath("TEACHER", "/watch/abc?x=1")).toBe("/watch/abc?x=1");
   });
 
   it("never lets next cross a role boundary", () => {
     const teacherOnly = ["/dashboard", "/upload", "/videos", "/videos/1", "/surveys", "/quizzes", "/responses", "/responses/3", "/dashboard?x=1", "/videos#a"];
-    for (const next of teacherOnly) expect(postAuthPath("STUDENT", next)).toBe("/library");
-    for (const next of ["/home", "/results", "/results/1"]) expect(postAuthPath("TEACHER", next)).toBe("/dashboard");
+    for (const next of teacherOnly) expect(postAuthPath("STUDENT", next)).toBe("/student");
+    // Teachers are blocked from every student route, including the grown-ups placeholder.
+    for (const next of ["/student", "/student/journeys", "/student/virtues", "/student/profile", "/student/parent", "/student/parent?x=1", "/welcome"]) {
+      expect(canAccessPath("TEACHER", next)).toBe(false);
+      expect(postAuthPath("TEACHER", next)).toBe("/dashboard");
+    }
+  });
+
+  it("no longer treats the removed student pages as student routes", () => {
+    // /home and /results are gone: they are plain unknown paths now, not role-guarded prefixes.
+    for (const path of ["/home", "/results", "/results/1"]) {
+      expect(canAccessPath("TEACHER", path)).toBe(true);
+      expect(canAccessPath("STUDENT", path)).toBe(true);
+    }
+    // Their old /student/* siblings are still inside the /student prefix, so teachers stay out.
+    for (const path of ["/student/learning", "/student/assignments", "/student/progress", "/student/reports"]) {
+      expect(canAccessPath("TEACHER", path)).toBe(false);
+    }
   });
 
   it("cannot be bypassed with encoding tricks, and rejects unsafe values", () => {
-    for (const next of ["/%64ashboard", "/%75pload", "/videos%2F1", "/%ZZ"]) expect(postAuthPath("STUDENT", next)).toBe("/library");
+    for (const next of ["/%64ashboard", "/%75pload", "/videos%2F1", "/%ZZ"]) expect(postAuthPath("STUDENT", next)).toBe("/student");
+    for (const next of ["/%73tudent", "/student%2Fparent"]) expect(canAccessPath("TEACHER", next)).toBe(false);
     for (const next of ["//evil.com", "https://evil.com", "/\\evil.com", "javascript:alert(1)", "evil", ""]) {
-      expect(postAuthPath("STUDENT", next)).toBe("/library");
+      expect(postAuthPath("STUDENT", next)).toBe("/student");
       expect(postAuthPath("TEACHER", next)).toBe("/dashboard");
     }
   });
 
   it("labels a sign-in page by the entry button used (display only)", () => {
-    expect(intendedRoleFor("/library")).toBe("STUDENT");
-    expect(intendedRoleFor("/results")).toBe("STUDENT");
+    expect(intendedRoleFor("/student")).toBe("STUDENT");
+    expect(intendedRoleFor("/student/parent")).toBe("STUDENT");
+    expect(intendedRoleFor("/welcome")).toBe("STUDENT");
     expect(intendedRoleFor("/dashboard")).toBe("TEACHER");
     expect(intendedRoleFor("/videos/4")).toBe("TEACHER");
-    for (const next of [null, undefined, "", "/watch/abc", "/settings", "//evil.com", "https://evil.com"]) expect(intendedRoleFor(next)).toBeNull();
+    // /library is shared now (students no longer start there), so it says nothing about who is signing in.
+    for (const next of [null, undefined, "", "/library", "/watch/abc", "/settings", "//evil.com", "https://evil.com"]) expect(intendedRoleFor(next)).toBeNull();
   });
 
   it("routes new students through the welcome step, then on to a safe destination", () => {
     expect(welcomePathFor("STUDENT", undefined)).toBe("/welcome");
-    expect(welcomePathFor("STUDENT", "/library")).toBe("/welcome");
+    expect(welcomePathFor("STUDENT", "/student")).toBe("/welcome");
+    expect(welcomePathFor("STUDENT", "/library")).toBe("/welcome?next=%2Flibrary");
     expect(welcomePathFor("STUDENT", "/watch/abc")).toBe("/welcome?next=%2Fwatch%2Fabc");
     // Cannot be steered into teacher pages or off-site, and teachers never see the student welcome.
     expect(welcomePathFor("STUDENT", "/dashboard")).toBe("/welcome");

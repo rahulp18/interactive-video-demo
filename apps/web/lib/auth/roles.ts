@@ -10,12 +10,12 @@ export const isUserRole = (value: unknown): value is UserRole => value === "STUD
 
 /** Where each role starts, and where a role is sent when it asks for something it may not use. */
 export function homePathFor(role: UserRole): string {
-  return role === "TEACHER" ? "/dashboard" : "/library";
+  return role === "TEACHER" ? "/dashboard" : "/student";
 }
 
 // Everything else (/library, /settings, /watch/*, /login, ...) is shared by both roles.
 const TEACHER_ONLY = ["/dashboard", "/upload", "/videos", "/surveys", "/quizzes", "/responses"] as const;
-const STUDENT_ONLY = ["/home", "/results", "/welcome", "/student"] as const;
+const STUDENT_ONLY = ["/welcome", "/student"] as const;
 
 const under = (pathname: string, prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
 
@@ -38,14 +38,14 @@ export function canAccessPath(role: UserRole, path: string): boolean {
 
 /**
  * Which kind of account a sign-in page was opened for, judged from its `?next=` (the landing page's Student button
- * sends `/library`, its Teacher button `/dashboard`). Display only, never used for authorization; null = unknown.
+ * sends `/student`, its Teacher button `/dashboard`). Display only, never used for authorization; null = unknown.
  */
 export function intendedRoleFor(rawNext: string | null | undefined): UserRole | null {
   const next = safeNextPath(rawNext, "");
   if (!next) return null;
   if (!canAccessPath("TEACHER", next)) return "STUDENT";
   if (!canAccessPath("STUDENT", next)) return "TEACHER";
-  return next === "/library" ? "STUDENT" : null;
+  return null; // shared routes (/library, /watch, ...) say nothing about who is signing in
 }
 
 /**

@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuIcon, PlayCircleIcon, PlusIcon, XIcon } from "lucide-react";
+import { MenuIcon, PlayCircleIcon, PlusIcon, ShieldCheckIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -8,7 +8,7 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { homePathFor, type UserRole } from "@/lib/auth/roles";
-import { isItemActive, navGroupsFor, titleFor } from "./nav-items";
+import { STUDENT_GROWNUPS_LINK, STUDENT_NAV_ITEMS, isItemActive, navGroupsFor, titleFor } from "./nav-items";
 
 type User = { name: string; email: string; role: UserRole };
 
@@ -17,7 +17,10 @@ function BrandMark({ role, rail = false }: { role: UserRole; rail?: boolean }) {
     <Link
       href={role === "STUDENT" ? "/student" : homePathFor(role)}
       aria-label="PARICHAY home"
-      className="flex items-center gap-2 rounded-md px-2 text-base font-semibold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className={cn(
+        "flex items-center gap-2 rounded-md px-2 text-base font-semibold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        role === "STUDENT" && "min-h-12",
+      )}
     >
       <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <PlayCircleIcon className="size-4" aria-hidden />
@@ -69,7 +72,8 @@ function SidebarContent({ user, rail }: { user: User; rail: boolean }) {
                   title={rail ? label : undefined}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "relative flex items-center gap-3 rounded-lg px-3 py-2 font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    user.role === "STUDENT" ? "min-h-12 rounded-2xl text-base" : "min-h-10 text-sm",
                     rail && "max-lg:justify-center max-lg:px-0",
                     active
                       ? "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-primary"
@@ -86,21 +90,34 @@ function SidebarContent({ user, rail }: { user: User; rail: boolean }) {
       </nav>
       <div className="space-y-3 border-t border-sidebar-border pt-4">
         {user.role === "STUDENT" ? (
-          <Link
-            href="/student/profile"
-            title={rail ? user.name : undefined}
-            aria-current={profileActive ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg p-1.5 outline-none transition-colors hover:bg-sidebar-accent/60 focus-visible:ring-3 focus-visible:ring-ring/50",
-              rail && "max-lg:justify-center",
-            )}
-          >
-            <Avatar name={user.name} />
-            <span className={cn("min-w-0", rail && "max-lg:sr-only")}>
-              <span className="block truncate text-sm font-medium">{user.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
-            </span>
-          </Link>
+          <>
+            <Link
+              href={STUDENT_GROWNUPS_LINK.href}
+              title={rail ? STUDENT_GROWNUPS_LINK.label : undefined}
+              aria-current={pathname.startsWith(STUDENT_GROWNUPS_LINK.href) ? "page" : undefined}
+              className={cn(
+                "flex min-h-12 items-center gap-3 rounded-2xl px-3 text-sm text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
+                rail && "max-lg:justify-center max-lg:px-0",
+              )}
+            >
+              <ShieldCheckIcon className="size-[18px] shrink-0" aria-hidden />
+              <span className={cn(rail && "max-lg:sr-only")}>{STUDENT_GROWNUPS_LINK.label}</span>
+            </Link>
+            <Link
+              href="/student/profile"
+              title={rail ? user.name : undefined}
+              aria-current={profileActive ? "page" : undefined}
+              className={cn(
+                "flex min-h-12 items-center gap-3 rounded-2xl p-1.5 outline-none transition-colors hover:bg-sidebar-accent/60 focus-visible:ring-3 focus-visible:ring-ring/50",
+                rail && "max-lg:justify-center",
+              )}
+            >
+              <Avatar name={user.name} />
+              <span className={cn("min-w-0", rail && "max-lg:sr-only")}>
+                <span className="block truncate text-sm font-medium">{user.name}</span>
+              </span>
+            </Link>
+          </>
         ) : (
           <div className="flex items-center gap-3 px-1">
             <Avatar name={user.name} />
@@ -110,18 +127,60 @@ function SidebarContent({ user, rail }: { user: User; rail: boolean }) {
             </div>
           </div>
         )}
-        <LogoutButton rail={rail} className="flex-col items-stretch gap-2 [&>button]:w-full" />
+        <LogoutButton rail={rail} className="flex-col items-stretch gap-2 [&>button]:w-full" buttonClassName={user.role === "STUDENT" ? "min-h-12 rounded-2xl" : undefined} />
       </div>
     </div>
   );
 }
 
 /** Persistent sidebar (md+; icon rail on tablet for students), slide-over navigation (mobile), top bar and the content workspace. */
-export function AppFrame({ user, children }: { user: User; children: ReactNode }) {
+/** Phone-only bottom tab bar for students: the four destinations, icon + short label, 48px+ targets, safe-area padding. */
+function StudentTabBar() {
+  const pathname = usePathname();
+  return (
+    <nav
+      aria-label="Main"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar pb-[env(safe-area-inset-bottom)] md:hidden"
+    >
+      <ul className="mx-auto grid max-w-lg grid-cols-4">
+        {STUDENT_NAV_ITEMS.map((item) => {
+          const active = isItemActive(pathname, item);
+          const Icon = item.icon;
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                aria-label={item.label}
+                className={cn(
+                  "relative flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
+                  active ? "font-bold text-sidebar-accent-foreground" : "font-medium text-muted-foreground",
+                )}
+              >
+                <span
+                  aria-hidden
+                  className={cn("flex h-7 w-12 items-center justify-center rounded-full transition-colors", active && "bg-sidebar-accent")}
+                >
+                  <Icon className="size-5" />
+                </span>
+                <span aria-hidden className="max-w-full truncate">
+                  {item.shortLabel ?? item.label}
+                </span>
+                {active && <span aria-hidden className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" />}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+export function AppFrame({ user, fontClass, children }: { user: User; fontClass?: string; children: ReactNode }) {
   const pathname = usePathname();
   // The drawer is open only for the path it was opened on, so navigating closes it. Escape closes it too.
   const [openPath, setOpenPath] = useState<string | null>(null);
-  const open = openPath === pathname;
+  const open = openPath === pathname && user.role !== "STUDENT"; // students use the bottom tab bar, not a drawer
   const setOpen = (value: boolean) => setOpenPath(value ? pathname : null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const isStudent = user.role === "STUDENT";
@@ -141,7 +200,7 @@ export function AppFrame({ user, children }: { user: User; children: ReactNode }
   }, [open]);
 
   return (
-    <div className="flex min-h-dvh flex-1">
+    <div className={cn("flex min-h-dvh flex-1", isStudent && fontClass)} data-audience={isStudent ? "student" : undefined}>
       <aside
         className={cn(
           "sticky top-0 hidden h-dvh shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:block",
@@ -170,14 +229,17 @@ export function AppFrame({ user, children }: { user: User; children: ReactNode }
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/90 px-4 backdrop-blur sm:px-6">
+        <header className={cn("sticky top-0 z-30 flex items-center gap-3 border-b bg-background/90 px-4 backdrop-blur sm:px-6", isStudent ? "h-16" : "h-14")}>
           <button
             type="button"
             aria-label="Open navigation"
             aria-expanded={open}
             ref={menuButton}
             onClick={() => setOpen(true)}
-            className="-ml-1 flex size-10 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+            className={cn(
+              "-ml-1 flex size-10 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden",
+              isStudent && "hidden",
+            )}
           >
             <MenuIcon className="size-5" aria-hidden />
           </button>
@@ -192,13 +254,27 @@ export function AppFrame({ user, children }: { user: User; children: ReactNode }
           >
             {titleFor(pathname)}
           </p>
+          {isStudent && (
+            <div className="flex items-center gap-1 md:hidden">
+              <Link
+                href={STUDENT_GROWNUPS_LINK.href}
+                aria-label={STUDENT_GROWNUPS_LINK.label}
+                data-touch
+                className="flex size-12 items-center justify-center rounded-2xl text-muted-foreground outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <ShieldCheckIcon className="size-5" aria-hidden />
+              </Link>
+              <LogoutButton rail buttonClassName="size-12 rounded-2xl p-0" />
+            </div>
+          )}
           {user.role === "TEACHER" && (
             <Link href="/upload" className={buttonVariants({ size: "sm" })}>
               <PlusIcon aria-hidden /> Upload<span className="hidden sm:inline"> video</span>
             </Link>
           )}
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+        <main className={cn("mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8", isStudent && "pb-28 md:pb-8")}>{children}</main>
+        {isStudent && <StudentTabBar />}
       </div>
     </div>
   );
