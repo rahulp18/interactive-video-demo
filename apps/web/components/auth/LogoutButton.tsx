@@ -17,8 +17,11 @@ export function LogoutButton({
   buttonClassName,
   rail = false,
   iconOnly = false,
+  keepIcon = false,
   variant = "outline",
 }: {
+  /** With `rail`: keep the icon visible beside the label on wide screens. */
+  keepIcon?: boolean;
   className?: string;
   buttonClassName?: string;
   rail?: boolean;
@@ -64,7 +67,7 @@ export function LogoutButton({
         {pending ? (
           <LoaderCircleIcon className="animate-spin" aria-hidden />
         ) : (
-          (rail || iconOnly) && <LogOutIcon aria-hidden className={iconOnly ? undefined : "lg:hidden"} />
+          (rail || iconOnly) && <LogOutIcon aria-hidden className={iconOnly || keepIcon ? undefined : "lg:hidden"} />
         )}
         <span className={cn(iconOnly ? "sr-only" : rail && "max-lg:sr-only")}>{pending ? "Logging out…" : "Log out"}</span>
       </Button>
